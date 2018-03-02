@@ -17,14 +17,12 @@ namespace Shoppy.Api.Controllers
             _listAppService = listAppService;
         }
 
-        // GET api/values
         [HttpGet]
         public async Task<IList<ListDto>> Get()
         {
             return await _listAppService.GetAll();
         }
 
-        // GET api/values/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
@@ -34,7 +32,6 @@ namespace Shoppy.Api.Controllers
             return new ObjectResult(listDto);
         }
 
-        // POST api/values
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]CreateListDto value)
         {
@@ -45,7 +42,6 @@ namespace Shoppy.Api.Controllers
             return CreatedAtAction(nameof(Get), new { id = listDto.Id }, listDto);
         }
 
-        // PUT api/values/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromBody]ListDto value)
         {
@@ -56,7 +52,6 @@ namespace Shoppy.Api.Controllers
             return new NoContentResult();
         }
 
-        // DELETE api/values/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
