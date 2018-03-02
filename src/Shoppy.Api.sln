@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Api", "Shoppy.Api\Shoppy.Api.csproj", "{205BB606-26AB-46B4-A4CF-BE2DB2986E41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Core", "Shoppy.Core\Shoppy.Core.csproj", "{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Application", "Shoppy.Application\Shoppy.Application.csproj", "{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{205BB606-26AB-46B4-A4CF-BE2DB2986E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{205BB606-26AB-46B4-A4CF-BE2DB2986E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{205BB606-26AB-46B4-A4CF-BE2DB2986E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{205BB606-26AB-46B4-A4CF-BE2DB2986E41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {223BE6E9-95BE-478D-8A5A-927EB7B255DF}
+	EndGlobalSection
+EndGlobal
