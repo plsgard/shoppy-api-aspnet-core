@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Core", "Shoppy.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Application", "Shoppy.Application\Shoppy.Application.csproj", "{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Data", "Shoppy.Data\Shoppy.Data.csproj", "{986205CA-3597-411F-A143-00780BA1E128}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{986205CA-3597-411F-A143-00780BA1E128}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{986205CA-3597-411F-A143-00780BA1E128}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{986205CA-3597-411F-A143-00780BA1E128}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{986205CA-3597-411F-A143-00780BA1E128}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

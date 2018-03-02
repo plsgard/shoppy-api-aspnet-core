@@ -1,16 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System;
+using Shoppy.Application.Commons;
+using Shoppy.Application.Items.Dtos;
 
 namespace Shoppy.Application.Items
 {
-    public interface IItemAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>
+    public interface IItemAppService : IAppService<ItemDto, Guid, CreateItemDto, ItemDto>
     {
-        Task<IList<TEntityDto>> GetAll();
-
-        Task<TEntityDto> Get(TPrimaryKey id);
-
-        Task<TEntityDto> Create(TCreateEntityDto input);
-
-        Task<TEntityDto> Update(TUpdateEntityDto input);
     }
 }

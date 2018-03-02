@@ -8,7 +8,9 @@ namespace Shoppy.Core.Lists
 {
     public class List : Entity<Guid>
     {
-        [Required, StringLength(50)]
+        public const int MaxNameLength = 50;
+
+        [Required, StringLength(MaxNameLength)]
         public string Name { get; set; }
 
         public virtual ICollection<Item> Items { get; set; }

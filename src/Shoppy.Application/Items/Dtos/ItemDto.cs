@@ -8,5 +8,7 @@ namespace Shoppy.Application.Items.Dtos
         public Guid ListId { get; set; }
 
         public string Name { get; set; }
+
+        public bool Picked { get; set; }
     }
 }
