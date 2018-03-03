@@ -8,12 +8,11 @@ namespace Shoppy.Application.Commons
 {
     public class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>
     {
-        private readonly IMapper _mapper;
+        protected IMapper ObjectMapper => Mapper.Instance;
         protected IRepository<TEntity, TPrimaryKey> Repository { get; }
 
-        public AppService(IRepository<TEntity, TPrimaryKey> repository, IMapper mapper)
+        public AppService(IRepository<TEntity, TPrimaryKey> repository)
         {
-            _mapper = mapper;
             Repository = repository;
         }
 
@@ -21,19 +20,19 @@ namespace Shoppy.Application.Commons
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
-            return _mapper.Map<TEntityDto>(entity);
+            return ObjectMapper.Map<TEntityDto>(entity);
         }
 
         protected virtual TEntity ToEntity<TDto>(TDto dto)
         {
             if (dto == null) throw new ArgumentNullException(nameof(dto));
 
-            return _mapper.Map<TEntity>(dto);
+            return ObjectMapper.Map<TEntity>(dto);
         }
 
         public async Task<IList<TEntityDto>> GetAll()
         {
-            return _mapper.Map<List<TEntityDto>>(await Repository.GetAllListAsync());
+            return ObjectMapper.Map<List<TEntityDto>>(await Repository.GetAllListAsync());
         }
 
         public async Task<TEntityDto> Get(TPrimaryKey id)

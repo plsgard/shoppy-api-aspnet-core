@@ -1,9 +1,10 @@
-﻿using Shoppy.Application.Items.Dtos;
-
-namespace Shoppy.Application.Commons
+﻿namespace Shoppy.Application.Commons
 {
-    public class EntitDto<TPrimaryKey>:IEntityDto<TPrimaryKey>
+    public class EntitDto<TPrimaryKey> : IEntityDto<TPrimaryKey>
     {
+        /// <summary>
+        /// Unique ID.
+        /// </summary>
         public TPrimaryKey Id { get; set; }
     }
 }
