@@ -7,8 +7,9 @@ using Shoppy.Application.Items.Dtos;
 
 namespace Shoppy.Api.Controllers
 {
+    [ApiVersion("1")]
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ItemsController : Controller
     {
         private readonly IItemAppService _itemAppService;

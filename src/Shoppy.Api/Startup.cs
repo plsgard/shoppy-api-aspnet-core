@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,30 +38,47 @@ namespace Shoppy.Api
         {
             ConfigureInjection(services);
 
+            services.AddMvcCore().AddVersionedApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
             services.AddMvc();
+            services.AddApiVersioning(options =>
+            {
+                options.ReportApiVersions = true;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+            });
             services.AddAutoMapper();
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new Info
-                {
-                    Title = "Shoppy API",
-                    Version = "v1",
-                    Description = "A simple API for Shoppy App.",
-                    Contact = new Contact
-                    {
-                        Email = "hello@plsgd.com",
-                        Name = "Pier-Lionel Sgard",
-                        Url = "http://plsgd.com"
-                    }
-                });
+                var provider = services.BuildServiceProvider()
+                    .GetRequiredService<IApiVersionDescriptionProvider>();
 
-                c.DocumentFilter<LowercaseDocumentFilter>();
+                foreach (var description in provider.ApiVersionDescriptions)
+                {
+                    options.SwaggerDoc(description.GroupName, new Info
+                    {
+                        Title = $"Shoppy API {description.GroupName}",
+                        Version = description.ApiVersion.ToString(),
+                        Description = "A simple API for Shoppy App." + (description.IsDeprecated ? " /WARNING/ This API version has been deprecated." : string.Empty),
+                        Contact = new Contact
+                        {
+                            Email = "hello@plsgd.com",
+                            Name = "Pier-Lionel Sgard",
+                            Url = "http://plsgd.com"
+                        }
+                    });
+                }
+
+                options.DocumentFilter<LowercaseDocumentFilter>();
 
                 // Set the comments path for the Swagger JSON and UI.
                 var basePath = AppContext.BaseDirectory;
                 foreach (var file in Directory.GetFiles(basePath, "*.xml"))
-                    c.IncludeXmlComments(file);
+                    options.IncludeXmlComments(file);
             });
         }
 
@@ -76,7 +95,7 @@ namespace Shoppy.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApiVersionDescriptionProvider provider)
         {
             if (env.IsDevelopment())
             {
@@ -87,9 +106,14 @@ namespace Shoppy.Api
             app.UseSwagger();
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
+            app.UseSwaggerUI(options =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                foreach (var description in provider.ApiVersionDescriptions)
+                {
+                    options.SwaggerEndpoint(
+                        $"/swagger/{description.GroupName}/swagger.json",
+                        description.GroupName.ToUpperInvariant());
+                }
             });
 
             app.UseMvc();

@@ -7,8 +7,9 @@ using Shoppy.Application.Lists.Dtos;
 
 namespace Shoppy.Api.Controllers
 {
+    [ApiVersion("1")]
     [Produces("application/json")]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class ListsController : Controller
     {
         private readonly IListAppService _listAppService;
