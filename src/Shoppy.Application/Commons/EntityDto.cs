@@ -1,6 +1,6 @@
 ﻿namespace Shoppy.Application.Commons
 {
-    public class EntitDto<TPrimaryKey> : IEntityDto<TPrimaryKey>
+    public class EntityDto<TPrimaryKey> : IEntityDto<TPrimaryKey>
     {
         /// <summary>
         /// Unique ID.

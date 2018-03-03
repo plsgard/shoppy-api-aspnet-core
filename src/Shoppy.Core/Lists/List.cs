@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Shoppy.Core.Commons;
+using Shoppy.Core.Auditing;
 using Shoppy.Core.Items;
 
 namespace Shoppy.Core.Lists
 {
-    public class List : Entity<Guid>
+    public class List : AuditedEntity<Guid>
     {
         public const int MaxNameLength = 50;
 
