@@ -7,7 +7,7 @@ using Shoppy.Core.Data;
 
 namespace Shoppy.Data.Repositories
 {
-    public class Repository<TEntity, TPrimaryKey> : IRepository<TEntity, TPrimaryKey> where TEntity : class
+    public class Repository<TEntity, TPrimaryKey> : BaseRepository, IRepository<TEntity, TPrimaryKey> where TEntity : class
     {
         protected ShoppyContext Context { get; }
 
@@ -39,6 +39,9 @@ namespace Shoppy.Data.Repositories
         public virtual async Task<TEntity> AddAsync(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
+
+            Normalize(entity);
+
             await DbSet.AddAsync(entity);
             await Context.SaveChangesAsync();
             return entity;
@@ -47,6 +50,9 @@ namespace Shoppy.Data.Repositories
         public virtual async Task<TEntity> UpdateAsync(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
+
+            Normalize(entity);
+
             DbSet.Update(entity);
             await Context.SaveChangesAsync();
             return entity;
@@ -60,6 +66,11 @@ namespace Shoppy.Data.Repositories
                 throw new ArgumentException($"No entity with key '{key}'.", nameof(key));
             DbSet.Remove(entity);
             await Context.SaveChangesAsync();
+        }
+
+        public void Dispose()
+        {
+            Context?.Dispose();
         }
     }
 }

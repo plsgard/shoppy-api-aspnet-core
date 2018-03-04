@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Api", "Shoppy.Api\Shoppy.Api.csproj", "{205BB606-26AB-46B4-A4CF-BE2DB2986E41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Api", "Shoppy.Api\Shoppy.Api.csproj", "{205BB606-26AB-46B4-A4CF-BE2DB2986E41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Core", "Shoppy.Core\Shoppy.Core.csproj", "{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Core", "Shoppy.Core\Shoppy.Core.csproj", "{EE593CFB-6DBB-4F0E-A51D-E8901D8D475B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Application", "Shoppy.Application\Shoppy.Application.csproj", "{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Application", "Shoppy.Application\Shoppy.Application.csproj", "{C1628844-D3EC-4B4C-9FAC-2ADD5DD9F343}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Data", "Shoppy.Data\Shoppy.Data.csproj", "{986205CA-3597-411F-A143-00780BA1E128}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Data", "Shoppy.Data\Shoppy.Data.csproj", "{986205CA-3597-411F-A143-00780BA1E128}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Utils", "Shoppy.Utils\Shoppy.Utils.csproj", "{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{986205CA-3597-411F-A143-00780BA1E128}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{986205CA-3597-411F-A143-00780BA1E128}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{986205CA-3597-411F-A143-00780BA1E128}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

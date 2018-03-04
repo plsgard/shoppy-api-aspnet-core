@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shoppy.Core\Shoppy.Core.csproj" />
+    <ProjectReference Include="..\Shoppy.Utils\Shoppy.Utils.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using Shoppy.Application.Items.Dtos;
 
 namespace Shoppy.Application.Items
 {
-    public interface IItemAppService : IAppService<ItemDto, Guid, CreateItemDto, ItemDto>
+    public interface IItemAppService : IAppService<ItemDto, Guid, CreateItemDto, ItemDto, GetAllItemsDto>
     {
     }
 }

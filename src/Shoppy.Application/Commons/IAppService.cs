@@ -15,4 +15,9 @@ namespace Shoppy.Application.Commons
 
         Task Delete(TPrimaryKey id);
     }
+
+    public interface IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>
+    {
+        Task<IList<TEntityDto>> GetAll(TGetAllDto input);
+    }
 }

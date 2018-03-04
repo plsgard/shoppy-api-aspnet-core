@@ -26,9 +26,9 @@ namespace Shoppy.Api.Controllers
         /// <response code="200">Returns the list of all items.</response>
         [HttpGet]
         [ProducesResponseType(typeof(IList<ItemDto>), 200)]
-        public async Task<IList<ItemDto>> Get()
+        public async Task<IList<ItemDto>> Get(GetAllItemsDto query = null)
         {
-            return await _itemAppService.GetAll();
+            return query == null ? await _itemAppService.GetAll() : await _itemAppService.GetAll(query);
         }
 
         /// <summary>

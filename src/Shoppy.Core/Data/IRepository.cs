@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Shoppy.Core.Data
 {
-    public interface IRepository<TEntity, TPrimaryKey>
+    public interface IRepository<TEntity, TPrimaryKey> : IDisposable
     {
         Task<TEntity> GetByIdAsync(TPrimaryKey key);
         IQueryable<TEntity> GetAll();
