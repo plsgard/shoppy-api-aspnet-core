@@ -8,11 +8,11 @@ using Shoppy.Utils.Enumerable;
 
 namespace Shoppy.Application.Commons
 {
-    public class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : BaseAppService, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntity : IEntity<TPrimaryKey>
+    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : BaseAppService, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntity : IEntity<TPrimaryKey>
     {
         protected IRepository<TEntity, TPrimaryKey> Repository { get; }
 
-        public AppService(IRepository<TEntity, TPrimaryKey> repository)
+        protected AppService(IRepository<TEntity, TPrimaryKey> repository)
         {
             Repository = repository;
         }
@@ -65,9 +65,9 @@ namespace Shoppy.Application.Commons
         }
     }
 
-    public class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> where TEntity : IEntity<TPrimaryKey>
+    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> where TEntity : IEntity<TPrimaryKey>
     {
-        public AppService(IRepository<TEntity, TPrimaryKey> repository) : base(repository)
+        protected AppService(IRepository<TEntity, TPrimaryKey> repository) : base(repository)
         {
         }
 
@@ -86,7 +86,7 @@ namespace Shoppy.Application.Commons
 
         private IOrderedQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetAllDto input)
         {
-            if (input is ISorted sorted) return sorted.Sorting.EndsWith("DESC") ? query.OrderByDescending(sorted.Sorting.Replace("DESC", string.Empty).Trim()) : query.OrderBy(sorted.Sorting.Replace("ASC", string.Empty).Trim());
+            if (input is ISorted sorted) return sorted.Sorting.EndsWith("DESC", StringComparison.InvariantCultureIgnoreCase) ? query.OrderByDescending(sorted.Sorting.Replace("DESC", string.Empty, StringComparison.InvariantCultureIgnoreCase).Trim()) : query.OrderBy(sorted.Sorting.Replace("ASC", string.Empty, StringComparison.InvariantCultureIgnoreCase).Trim());
             return query.OrderBy(c => c.Id);
         }
 
