@@ -8,7 +8,7 @@ using Shoppy.Utils.Enumerable;
 
 namespace Shoppy.Application.Commons
 {
-    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : BaseAppService, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntity : IEntity<TPrimaryKey>
+    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : BaseAppService<TEntity, TEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntity : IEntity<TPrimaryKey>
     {
         protected IRepository<TEntity, TPrimaryKey> Repository { get; }
 
@@ -16,21 +16,7 @@ namespace Shoppy.Application.Commons
         {
             Repository = repository;
         }
-
-        protected virtual TEntityDto ToDto(TEntity entity)
-        {
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
-
-            return ObjectMapper.Map<TEntityDto>(entity);
-        }
-
-        protected virtual TEntity ToEntity<TDto>(TDto dto)
-        {
-            if (dto == null) throw new ArgumentNullException(nameof(dto));
-
-            return ObjectMapper.Map<TEntity>(dto);
-        }
-
+        
         public virtual async Task<IList<TEntityDto>> GetAll()
         {
             return ObjectMapper.Map<List<TEntityDto>>(await Repository.GetAllListAsync());

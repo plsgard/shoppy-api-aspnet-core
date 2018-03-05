@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Shoppy.Core.Users
+namespace Shoppy.Core.Session
 {
-    public interface IUserManager
+    public interface IAppSession
     {
         Guid? GetCurrentUserId();
     }

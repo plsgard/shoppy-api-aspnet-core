@@ -1,23 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Shoppy.Api.Configurations;
 using Shoppy.Application.Commons;
 using Shoppy.Application.Items;
 using Shoppy.Application.Lists;
+using Shoppy.Application.Users;
 using Shoppy.Core.Data;
+using Shoppy.Core.Roles;
+using Shoppy.Core.Session;
+using Shoppy.Core.Users;
 using Shoppy.Data;
 using Shoppy.Data.Repositories;
 using Swashbuckle.AspNetCore.Swagger;
@@ -36,20 +39,13 @@ namespace Shoppy.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            ConfigureDatabase(services);
+            ConfigureSecurity(services);
             ConfigureInjection(services);
+            ConfigurationApi(services);
 
-            services.AddMvcCore().AddVersionedApiExplorer(options =>
-            {
-                options.GroupNameFormat = "'v'VVV";
-                options.SubstituteApiVersionInUrl = true;
-            });
             services.AddMvc();
-            services.AddApiVersioning(options =>
-            {
-                options.ReportApiVersions = true;
-                options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.AssumeDefaultVersionWhenUnspecified = true;
-            });
+
             services.AddAutoMapper();
 
             services.AddSwaggerGen(options =>
@@ -82,16 +78,66 @@ namespace Shoppy.Api
             });
         }
 
+        private void ConfigurationApi(IServiceCollection services)
+        {
+            services.AddMvcCore().AddVersionedApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
+            services.AddApiVersioning(options =>
+            {
+                options.ReportApiVersions = true;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+            });
+        }
+
         private void ConfigureInjection(IServiceCollection services)
         {
-            services.AddDbContext<ShoppyContext>(options =>
-                options.UseInMemoryDatabase("ShoppyDb")
-            );
-
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
-            services.AddTransient(typeof(IAppService<,,,>), typeof(AppService<,,,,>));
             services.AddTransient<IItemAppService, ItemAppService>();
             services.AddTransient<IListAppService, ListAppService>();
+            services.AddTransient<IUserAppService, UserAppService>();
+            services.AddTransient<IAppSession, AppSession>();
+        }
+
+        private void ConfigureSecurity(IServiceCollection services)
+        {
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(jwtBearerOptions =>
+                {
+                    jwtBearerOptions.SaveToken = true;
+                    jwtBearerOptions.RequireHttpsMetadata = false;
+                    jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateActor = false,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = Configuration["Auth:Token:Issuer"],
+                        ValidAudience = Configuration["Auth:Token:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes
+                            (Configuration["Auth:Token:Key"])),
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+        }
+
+        private void ConfigureDatabase(IServiceCollection services)
+        {
+            services.AddDbContext<ShoppyContext>(options =>
+                options.UseInMemoryDatabase("shoppy")
+            );
+
+            services.AddIdentity<User, Role>()
+                .AddEntityFrameworkStores<ShoppyContext>()
+                .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -116,6 +162,7 @@ namespace Shoppy.Api
                 }
             });
 
+            app.UseAuthentication();
             app.UseMvc();
         }
     }

@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Application", "Shopp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Data", "Shoppy.Data\Shoppy.Data.csproj", "{986205CA-3597-411F-A143-00780BA1E128}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shoppy.Utils", "Shoppy.Utils\Shoppy.Utils.csproj", "{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Utils", "Shoppy.Utils\Shoppy.Utils.csproj", "{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shoppy.Tests", "..\test\Shoppy.Tests\Shoppy.Tests.csproj", "{82CE1129-7A91-4F83-9BD6-92115B5CD8EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{639BE11F-4559-4963-92B4-ED5D2AEFE65B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,9 +43,16 @@ Global
 		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DA2EDF6-67BA-40E8-B9C9-797E479F1EC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82CE1129-7A91-4F83-9BD6-92115B5CD8EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82CE1129-7A91-4F83-9BD6-92115B5CD8EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82CE1129-7A91-4F83-9BD6-92115B5CD8EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82CE1129-7A91-4F83-9BD6-92115B5CD8EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{82CE1129-7A91-4F83-9BD6-92115B5CD8EE} = {639BE11F-4559-4963-92B4-ED5D2AEFE65B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {223BE6E9-95BE-478D-8A5A-927EB7B255DF}
