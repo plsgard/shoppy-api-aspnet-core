@@ -16,7 +16,7 @@ namespace Shoppy.Application.Commons
         {
             Repository = repository;
         }
-        
+
         public virtual async Task<IList<TEntityDto>> GetAll()
         {
             return ObjectMapper.Map<List<TEntityDto>>(await Repository.GetAllListAsync());
@@ -72,7 +72,7 @@ namespace Shoppy.Application.Commons
 
         private IOrderedQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetAllDto input)
         {
-            if (input is ISorted sorted) return sorted.Sorting.EndsWith("DESC", StringComparison.InvariantCultureIgnoreCase) ? query.OrderByDescending(sorted.Sorting.Replace("DESC", string.Empty, StringComparison.InvariantCultureIgnoreCase).Trim()) : query.OrderBy(sorted.Sorting.Replace("ASC", string.Empty, StringComparison.InvariantCultureIgnoreCase).Trim());
+            if (input is ISorted sorted) return sorted.SortType == SortType.DESC ? query.OrderByDescending(sorted.ToSortString()) : query.OrderBy(sorted.ToSortString());
             return query.OrderBy(c => c.Id);
         }
 

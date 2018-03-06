@@ -45,7 +45,7 @@ namespace Shoppy.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.FindByEmailAsync(model.Ùsername);
+            var user = await _userManager.FindByEmailAsync(model.Username);
             if (user == null)
                 return BadRequest();
 
@@ -57,7 +57,7 @@ namespace Shoppy.Api.Controllers
 
             var claims = new[]
             {
-                        new Claim(JwtRegisteredClaimNames.Sub, model.Ùsername),
+                        new Claim(JwtRegisteredClaimNames.Sub, model.Username),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                     };
 
