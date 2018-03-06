@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Shoppy.Api.Configurations;
-using Shoppy.Application.Commons;
 using Shoppy.Application.Items;
 using Shoppy.Application.Lists;
 using Shoppy.Application.Users;
@@ -69,6 +68,15 @@ namespace Shoppy.Api
                     });
                 }
 
+                options.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                {
+                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Name = "Authorization",
+                    In = "header",
+                    Type = "apiKey"
+                });
+
+                options.OperationFilter<SecurityRequirementsOperationFilter>();
                 options.DocumentFilter<LowercaseDocumentFilter>();
 
                 // Set the comments path for the Swagger JSON and UI.
@@ -118,6 +126,7 @@ namespace Shoppy.Api
                     {
                         ValidateActor = false,
                         ValidateAudience = true,
+                        ValidateIssuer = true,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
                         ValidIssuer = Configuration["Auth:Token:Issuer"],

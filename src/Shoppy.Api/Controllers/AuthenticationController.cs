@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,13 +30,22 @@ namespace Shoppy.Api.Controllers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Generates an authentication token for the provided user login.
+        /// </summary>
+        /// <param name="model">Couple of login/password account infos.</param>
+        /// <returns>A new authentication Bearer token.</returns>
+        /// <response code="200">Returns the newly-generated token.</response>
+        /// <response code="400">If the user account is invalid.</response>            
         [HttpPost("token")]
+        [ProducesResponseType(typeof(TokenDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Token([FromBody]LoginDto model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.FindByEmailAsync(model.Login);
+            var user = await _userManager.FindByEmailAsync(model.Ùsername);
             if (user == null)
                 return BadRequest();
 
@@ -46,9 +57,8 @@ namespace Shoppy.Api.Controllers
 
             var claims = new[]
             {
-                        new Claim(JwtRegisteredClaimNames.Sub, model.Login),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        new Claim(JwtRegisteredClaimNames.UniqueName, model.Login)
+                        new Claim(JwtRegisteredClaimNames.Sub, model.Ùsername),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                     };
 
             var token = new JwtSecurityToken
@@ -56,14 +66,14 @@ namespace Shoppy.Api.Controllers
                 _configuration["Auth:Token:Issuer"],
                 _configuration["Auth:Token:Audience"],
                 claims,
-                expires: DateTime.UtcNow.AddDays(60),
+                expires: DateTime.UtcNow.AddDays(1),
                 notBefore: DateTime.UtcNow,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey
                         (Encoding.UTF8.GetBytes(_configuration["Auth:Token:Key"])),
                     SecurityAlgorithms.HmacSha256)
             );
 
-            return Ok(new TokenDto { ExpirationDate = token.ValidTo, Token = new JwtSecurityTokenHandler().WriteToken(token) });
+            return Ok(new TokenDto { Id = token.Id, ExpirationDate = token.ValidTo, Token = new JwtSecurityTokenHandler().WriteToken(token) });
         }
     }
 }

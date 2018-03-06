@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Shoppy.Application.Authentication.Dtos;
 using Shoppy.Application.Commons;
 using Shoppy.Application.Users.Dtos;
 using Shoppy.Core.Users;
@@ -15,6 +16,16 @@ namespace Shoppy.Application.Users
         public UserAppService(UserManager<User> userManager)
         {
             _userManager = userManager;
+        }
+
+        public Task<UserDto> Register(RegisterDto input)
+        {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+
+            Normalize(input);
+            Validate(input);
+
+            return Create(ObjectMapper.Map<CreateUserDto>(input));
         }
 
         public async Task<UserDto> Create(CreateUserDto input)
