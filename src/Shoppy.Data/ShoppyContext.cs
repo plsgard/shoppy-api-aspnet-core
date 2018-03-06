@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Remotion.Linq.Parsing.ExpressionVisitors;
 using Shoppy.Core.Auditing;
 using Shoppy.Core.Commons;
 using Shoppy.Core.Items;
@@ -27,14 +29,47 @@ namespace Shoppy.Data
             _appSession = appSession;
         }
 
+        private static LambdaExpression ConvertFilterExpression<TInterface>(
+            Expression<Func<TInterface, bool>> filterExpression,
+            Type entityType)
+        {
+            var newParam = Expression.Parameter(entityType);
+            var newBody = ReplacingExpressionVisitor.Replace(filterExpression.Parameters.Single(), newParam, filterExpression.Body);
+
+            return Expression.Lambda(newBody, newParam);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            //foreach (var entityType in modelBuilder.Model.GetEntityTypes(typeof(ISoftDelete)))
-            //{
-            //    entityType.Fil
-            //}
+            modelBuilder.Model.GetEntityTypes()
+                .Where(entityType => typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
+                .ToList()
+                .ForEach(entityType =>
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .HasQueryFilter(ConvertFilterExpression<ISoftDelete>(e => !e.IsDeleted, entityType.ClrType));
+                });
+
+            var currentUserId = _appSession.GetCurrentUserId();
+            modelBuilder.Model.GetEntityTypes()
+                .Where(entityType => typeof(IMustHaveUser).IsAssignableFrom(entityType.ClrType))
+                .ToList()
+                .ForEach(entityType =>
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .HasQueryFilter(ConvertFilterExpression<IMustHaveUser>(e => currentUserId.HasValue && e.UserId == currentUserId.Value, entityType.ClrType));
+                });
+
+            modelBuilder.Model.GetEntityTypes()
+                .Where(entityType => typeof(IMayHaveUser).IsAssignableFrom(entityType.ClrType))
+                .ToList()
+                .ForEach(entityType =>
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .HasQueryFilter(ConvertFilterExpression<IMayHaveUser>(e => !e.UserId.HasValue || e.UserId == currentUserId, entityType.ClrType));
+                });
 
             //modelBuilder.Entity<ISoftDelete>().HasQueryFilter(p => !p.IsDeleted);
             //var currentUserId = _appSession.GetCurrentUserId();
