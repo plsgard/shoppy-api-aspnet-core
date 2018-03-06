@@ -144,7 +144,27 @@ namespace Shoppy.Api
                 options.UseInMemoryDatabase("shoppy")
             );
 
-            services.AddIdentity<User, Role>()
+            services.AddIdentity<User, Role>(options =>
+                {
+                    options.User = new UserOptions
+                    {
+                        RequireUniqueEmail = true
+                    };
+                    options.Password = new PasswordOptions
+                    {
+                        RequiredLength = User.MinPasswordLength
+                    };
+                    options.Lockout = new LockoutOptions
+                    {
+                        MaxFailedAccessAttempts = 5,
+                        AllowedForNewUsers = true,
+                        DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15)
+                    };
+                    options.SignIn = new SignInOptions
+                    {
+                        RequireConfirmedEmail = true
+                    };
+                })
                 .AddEntityFrameworkStores<ShoppyContext>()
                 .AddDefaultTokenProviders();
         }
