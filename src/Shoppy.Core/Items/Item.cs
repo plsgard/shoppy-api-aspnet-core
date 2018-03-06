@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Shoppy.Core.Auditing;
-using Shoppy.Core.Commons;
 using Shoppy.Core.Lists;
 
 namespace Shoppy.Core.Items

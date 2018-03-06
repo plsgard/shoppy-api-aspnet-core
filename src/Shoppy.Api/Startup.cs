@@ -79,6 +79,8 @@ namespace Shoppy.Api
                 options.OperationFilter<SecurityRequirementsOperationFilter>();
                 options.DocumentFilter<LowercaseDocumentFilter>();
 
+                options.DescribeAllEnumsAsStrings();
+
                 // Set the comments path for the Swagger JSON and UI.
                 var basePath = AppContext.BaseDirectory;
                 foreach (var file in Directory.GetFiles(basePath, "*.xml"))
@@ -162,7 +164,7 @@ namespace Shoppy.Api
                     };
                     options.SignIn = new SignInOptions
                     {
-                        RequireConfirmedEmail = true
+                        RequireConfirmedEmail = false // true : see later
                     };
                 })
                 .AddEntityFrameworkStores<ShoppyContext>()

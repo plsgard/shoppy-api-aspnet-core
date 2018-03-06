@@ -72,7 +72,7 @@ namespace Shoppy.Application.Commons
 
         private IOrderedQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetAllDto input)
         {
-            if (input is ISorted sorted) return sorted.SortType == SortType.DESC ? query.OrderByDescending(sorted.ToSortString()) : query.OrderBy(sorted.ToSortString());
+            if (input is ISorted sorted) return sorted.SortType == SortType.DESC ? query.OrderByDescending(sorted.SortProperty) : query.OrderBy(sorted.SortProperty);
             return query.OrderBy(c => c.Id);
         }
 

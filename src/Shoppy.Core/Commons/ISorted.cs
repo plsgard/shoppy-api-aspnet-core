@@ -2,11 +2,9 @@
 {
     public interface ISorted
     {
-        string Sorting { get; set; }
+        string SortProperty { get; set; }
 
-        SortType SortType { get; set; }
-
-        string ToSortString();
+        SortType? SortType { get; set; }
     }
 
     public enum SortType
