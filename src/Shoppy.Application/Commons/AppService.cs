@@ -8,7 +8,7 @@ using Shoppy.Utils.Enumerable;
 
 namespace Shoppy.Application.Commons
 {
-    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : BaseAppService<TEntity, TEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntity : IEntity<TPrimaryKey>
+    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> : BaseAppService<TEntity, TEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntity : IEntity<TPrimaryKey> where TEntityDto : IEntityDto<TPrimaryKey> where TUpdateEntityDto : IEntityDto<TPrimaryKey>
     {
         protected IRepository<TEntity, TPrimaryKey> Repository { get; }
 
@@ -41,8 +41,11 @@ namespace Shoppy.Application.Commons
             Normalize(input);
             Validate(input);
 
-            TEntity entity = ToEntity(input);
-            return ToDto(await Repository.UpdateAsync(entity));
+            TEntity entity = await Repository.GetByIdAsync(input.Id);
+            if (entity == null)
+                throw new ArgumentException($"No entity with id '{input.Id}'.", nameof(input.Id));
+            TEntity entityToUpdate = ObjectMapper.Map(input, entity); //ToEntity(input);
+            return ToDto(await Repository.UpdateAsync(entityToUpdate));
         }
 
         public virtual async Task Delete(TPrimaryKey id)
@@ -51,7 +54,7 @@ namespace Shoppy.Application.Commons
         }
     }
 
-    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> where TEntity : IEntity<TPrimaryKey>
+    public abstract class AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : AppService<TEntity, TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>, IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> where TEntity : IEntity<TPrimaryKey> where TEntityDto : IEntityDto<TPrimaryKey> where TUpdateEntityDto : IEntityDto<TPrimaryKey>
     {
         protected AppService(IRepository<TEntity, TPrimaryKey> repository) : base(repository)
         {

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Shoppy.Application.Commons
 {
-    public interface IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>
+    public interface IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntityDto : IEntityDto<TPrimaryKey> where TUpdateEntityDto : IEntityDto<TPrimaryKey>
     {
         Task<IList<TEntityDto>> GetAll();
 
@@ -16,7 +16,7 @@ namespace Shoppy.Application.Commons
         Task Delete(TPrimaryKey id);
     }
 
-    public interface IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto>
+    public interface IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto, TGetAllDto> : IAppService<TEntityDto, TPrimaryKey, TCreateEntityDto, TUpdateEntityDto> where TEntityDto : IEntityDto<TPrimaryKey> where TUpdateEntityDto : IEntityDto<TPrimaryKey>
     {
         Task<IList<TEntityDto>> GetAll(TGetAllDto input);
     }

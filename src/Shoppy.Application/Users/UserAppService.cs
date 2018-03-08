@@ -52,7 +52,10 @@ namespace Shoppy.Application.Users
             Normalize(input);
             Validate(input);
 
-            var entity = ToEntity(input);
+            var user = await _userManager.FindByIdAsync(input.Id.ToString());
+            if (user == null)
+                throw new ArgumentException($"No user with id '{input.Id}'.", nameof(input.Id));
+            var entity = ObjectMapper.Map(input, user);
             var identityResult = await _userManager.UpdateAsync(entity);
             if (identityResult.Succeeded)
                 return ToDto(entity);
