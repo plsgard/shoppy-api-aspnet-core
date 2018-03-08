@@ -30,6 +30,11 @@ namespace Shoppy.Api.Controllers
             _configuration = configuration;
         }
 
+        private static long ToUnixEpochDate(DateTime date)
+            => (long)Math.Round((date.ToUniversalTime() -
+                                 new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero))
+                .TotalSeconds);
+
         /// <summary>
         /// Generates an authentication token for the provided user login.
         /// </summary>
@@ -55,10 +60,12 @@ namespace Shoppy.Api.Controllers
             if (!result.Succeeded)
                 return Unauthorized();
 
+            var dateTime = DateTime.UtcNow.AddDays(1);
             var claims = new[]
             {
-                        new Claim(JwtRegisteredClaimNames.Sub, model.Username),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(dateTime).ToString(), ClaimValueTypes.Integer64)
                     };
 
             var token = new JwtSecurityToken
@@ -66,7 +73,7 @@ namespace Shoppy.Api.Controllers
                 _configuration["Auth:Token:Issuer"],
                 _configuration["Auth:Token:Audience"],
                 claims,
-                expires: DateTime.UtcNow.AddDays(1),
+                expires: dateTime,
                 notBefore: DateTime.UtcNow,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey
                         (Encoding.UTF8.GetBytes(_configuration["Auth:Token:Key"])),

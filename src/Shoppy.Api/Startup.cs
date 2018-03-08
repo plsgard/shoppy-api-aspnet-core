@@ -5,16 +5,19 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using Shoppy.Api.Configurations;
 using Shoppy.Application.Items;
 using Shoppy.Application.Lists;
+using Shoppy.Application.Session;
 using Shoppy.Application.Users;
 using Shoppy.Core.Data;
 using Shoppy.Core.Roles;
@@ -105,6 +108,7 @@ namespace Shoppy.Api
 
         private void ConfigureInjection(IServiceCollection services)
         {
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
             services.AddTransient<IItemAppService, ItemAppService>();
             services.AddTransient<IListAppService, ListAppService>();

@@ -70,13 +70,6 @@ namespace Shoppy.Data
                     modelBuilder.Entity(entityType.ClrType)
                         .HasQueryFilter(ConvertFilterExpression<IMayHaveUser>(e => !e.UserId.HasValue || e.UserId == currentUserId, entityType.ClrType));
                 });
-
-            //modelBuilder.Entity<ISoftDelete>().HasQueryFilter(p => !p.IsDeleted);
-            //var currentUserId = _appSession.GetCurrentUserId();
-            //modelBuilder.Entity<IMustHaveUser>()
-            //    .HasQueryFilter(p => currentUserId.HasValue && p.UserId == currentUserId.Value);
-            //modelBuilder.Entity<IMayHaveUser>()
-            //    .HasQueryFilter(p => !p.UserId.HasValue || p.UserId == currentUserId);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -107,17 +100,18 @@ namespace Shoppy.Data
                         deletedEntity.DeletionTime = null;
                 }
 
+                var currentUserId = _appSession.GetCurrentUserId();
                 switch (entry.State)
                 {
                     case EntityState.Added:
                         ((ICreationTime)entry.Entity).CreationTime = DateTimeOffset.UtcNow;
                         if (entry.Entity is ICreationAudited creationAudited)
-                            creationAudited.CreationUserId = _appSession.GetCurrentUserId();
+                            creationAudited.CreationUserId = currentUserId;
                         break;
                     case EntityState.Modified:
                         ((IModificationTime)entry.Entity).ModificationTime = DateTimeOffset.UtcNow;
                         if (entry.Entity is IModificationAudited modificationAudited)
-                            modificationAudited.ModificationUserId = _appSession.GetCurrentUserId();
+                            modificationAudited.ModificationUserId = currentUserId;
                         break;
                     case EntityState.Deleted:
                         entry.State = EntityState.Modified;
@@ -125,7 +119,7 @@ namespace Shoppy.Data
                         if (entry.Entity is IDeletionTime deletedEntity)
                             deletedEntity.DeletionTime = DateTimeOffset.UtcNow;
                         if (entry.Entity is IDeletionAudited deletedAutidedEntity)
-                            deletedAutidedEntity.DeletionUserId = _appSession.GetCurrentUserId();
+                            deletedAutidedEntity.DeletionUserId = currentUserId;
                         break;
                 }
             }
