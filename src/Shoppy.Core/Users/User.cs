@@ -21,7 +21,7 @@ namespace Shoppy.Core.Users
         [Required, StringLength(MaxLastNameLength)]
         public string LastName { get; set; }
 
-        [Required, StringLength(MaxPictureUrlLength), Url, DataType(DataType.Url)]
+        [StringLength(MaxPictureUrlLength), Url, DataType(DataType.Url)]
         public string PictureUrl { get; set; }
 
         public User()

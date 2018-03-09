@@ -147,7 +147,7 @@ namespace Shoppy.Api
         private void ConfigureDatabase(IServiceCollection services)
         {
             services.AddDbContext<ShoppyContext>(options =>
-                options.UseInMemoryDatabase("shoppy")
+                options.UseSqlServer(Configuration["ConnectionStrings:ShoppyContext"])
             );
 
             services.AddIdentity<User, Role>(options =>
