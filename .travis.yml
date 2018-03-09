@@ -1,0 +1,8 @@
+language: csharp
+mono: none
+dotnet: 2.1.4
+install:
+- dotnet restore src/
+script:
+- dotnet build src/
+- dotnet test test/Shoppy.Tests/Shoppy.Tests.csproj
