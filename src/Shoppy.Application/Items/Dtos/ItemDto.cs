@@ -1,13 +1,12 @@
 ﻿using System;
-using Shoppy.Application.Commons;
-using Shoppy.Core.Auditing;
+using Shoppy.Application.Auditing;
 
 namespace Shoppy.Application.Items.Dtos
 {
     /// <summary>
     /// An existing shopping item.
     /// </summary>
-    public class ItemDto : EntityDto<Guid>, ICreationTime, IModificationTime
+    public class ItemDto : AuditedTimeEntityDto<Guid>
     {
         /// <summary>
         /// Unique id of the associated shopping list.
@@ -28,15 +27,5 @@ namespace Shoppy.Application.Items.Dtos
         /// The index position of the item in the list.
         /// </summary>
         public int Index { get; set; }
-
-        /// <summary>
-        /// When the item has been created.
-        /// </summary>
-        public DateTimeOffset CreationTime { get; set; }
-
-        /// <summary>
-        /// When the item has been updated, if it was.
-        /// </summary>
-        public DateTimeOffset? ModificationTime { get; set; }
     }
 }
