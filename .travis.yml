@@ -6,3 +6,6 @@ install:
 script:
 - dotnet build src/
 - dotnet test test/Shoppy.Tests/Shoppy.Tests.csproj
+deploy:
+  provider: azure_web_apps
+  verbose: true
