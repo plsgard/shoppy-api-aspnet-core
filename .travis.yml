@@ -4,8 +4,11 @@ dotnet: 2.1.4
 install:
 - dotnet restore src/
 script:
-- dotnet build src/
+- dotnet build --configuration Release src/
 - dotnet test test/Shoppy.Tests/Shoppy.Tests.csproj
 deploy:
   provider: azure_web_apps
   verbose: true
+  skip_cleanup: true
+notifications:
+  slack: $NOTIF_SLACK_PLSGD
