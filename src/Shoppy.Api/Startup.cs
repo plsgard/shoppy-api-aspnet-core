@@ -193,7 +193,7 @@ namespace Shoppy.Api
                 {
                     options.SwaggerEndpoint(
                         $"/swagger/{description.GroupName}/swagger.json",
-                        description.GroupName.ToUpperInvariant());
+                        description.GroupName);
                 }
             });
 
