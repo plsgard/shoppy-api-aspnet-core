@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Shoppy.Core.Auditing;
+using Shoppy.Core.Commons;
 using Shoppy.Core.Items;
 
 namespace Shoppy.Core.Lists
 {
-    public class List : AuditedEntity<Guid>
+    public class List : AuditedEntity<Guid>, IMustHaveUser
     {
         public const int MaxNameLength = 50;
 
@@ -19,5 +20,7 @@ namespace Shoppy.Core.Lists
         {
             Id = Guid.NewGuid();
         }
+
+        public Guid UserId { get; set; }
     }
 }

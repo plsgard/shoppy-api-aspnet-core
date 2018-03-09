@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Remotion.Linq.Parsing.ExpressionVisitors;
 using Shoppy.Core.Auditing;
 using Shoppy.Core.Commons;
@@ -24,10 +26,14 @@ namespace Shoppy.Data
 
         public DbSet<Item> Items { get; set; }
 
+        private static readonly MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(ShoppyContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
+
         public ShoppyContext(DbContextOptions<ShoppyContext> options, IAppSession appSession) : base(options)
         {
             _appSession = appSession;
         }
+
+        public Guid? CurrentUserId => _appSession.GetCurrentUserId();
 
         private static LambdaExpression ConvertFilterExpression<TInterface>(
             Expression<Func<TInterface, bool>> filterExpression,
@@ -39,37 +45,91 @@ namespace Shoppy.Data
             return Expression.Lambda(newBody, newParam);
         }
 
+        protected void ConfigureGlobalFilters<TEntity>(ModelBuilder modelBuilder, IMutableEntityType entityType)
+            where TEntity : class
+        {
+            if (entityType.BaseType == null && ShouldFilterEntity<TEntity>(entityType))
+            {
+                var filterExpression = CreateFilterExpression<TEntity>();
+                if (filterExpression != null)
+                {
+                    modelBuilder.Entity<TEntity>().HasQueryFilter(filterExpression);
+                }
+            }
+        }
+
+        protected virtual bool ShouldFilterEntity<TEntity>(IMutableEntityType entityType) where TEntity : class
+        {
+            if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
+            {
+                return true;
+            }
+
+            if (typeof(IMayHaveUser).IsAssignableFrom(typeof(TEntity)))
+            {
+                return true;
+            }
+
+            if (typeof(IMustHaveUser).IsAssignableFrom(typeof(TEntity)))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        protected virtual Expression<Func<TEntity, bool>> CreateFilterExpression<TEntity>()
+            where TEntity : class
+        {
+            Expression<Func<TEntity, bool>> expression = null;
+
+            if (typeof(ISoftDelete).IsAssignableFrom(typeof(TEntity)))
+            {
+                /* This condition should normally be defined as below:
+                 * !IsSoftDeleteFilterEnabled || !((ISoftDelete) e).IsDeleted
+                 * But this causes a problem with EF Core (see https://github.com/aspnet/EntityFrameworkCore/issues/9502)
+                 * So, we made a workaround to make it working. It works same as above.
+                 */
+
+                Expression<Func<TEntity, bool>> softDeleteFilter = e => !((ISoftDelete)e).IsDeleted || ((ISoftDelete)e).IsDeleted != true;
+                expression = expression == null ? softDeleteFilter : CombineExpressions(expression, softDeleteFilter);
+            }
+
+            if (typeof(IMayHaveUser).IsAssignableFrom(typeof(TEntity)))
+            {
+                /* This condition should normally be defined as below:
+                 * !IsMayHaveTenantFilterEnabled || ((IMayHaveTenant)e).TenantId == CurrentTenantId
+                 * But this causes a problem with EF Core (see https://github.com/aspnet/EntityFrameworkCore/issues/9502)
+                 * So, we made a workaround to make it working. It works same as above.
+                 */
+                Expression<Func<TEntity, bool>> mayHaveTenantFilter = e => ((IMayHaveUser)e).UserId == CurrentUserId || ((IMayHaveUser)e).UserId == CurrentUserId;
+                expression = expression == null ? mayHaveTenantFilter : CombineExpressions(expression, mayHaveTenantFilter);
+            }
+
+            if (typeof(IMustHaveUser).IsAssignableFrom(typeof(TEntity)))
+            {
+                /* This condition should normally be defined as below:
+                 * !IsMustHaveTenantFilterEnabled || ((IMustHaveTenant)e).TenantId == CurrentTenantId
+                 * But this causes a problem with EF Core (see https://github.com/aspnet/EntityFrameworkCore/issues/9502)
+                 * So, we made a workaround to make it working. It works same as above.
+                 */
+                Expression<Func<TEntity, bool>> mustHaveTenantFilter = e => ((IMustHaveUser)e).UserId == CurrentUserId || ((IMustHaveUser)e).UserId == CurrentUserId;
+                expression = expression == null ? mustHaveTenantFilter : CombineExpressions(expression, mustHaveTenantFilter);
+            }
+
+            return expression;
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Model.GetEntityTypes()
-                .Where(entityType => typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
-                .ToList()
-                .ForEach(entityType =>
-                {
-                    modelBuilder.Entity(entityType.ClrType)
-                        .HasQueryFilter(ConvertFilterExpression<ISoftDelete>(e => !e.IsDeleted, entityType.ClrType));
-                });
-
-            var currentUserId = _appSession.GetCurrentUserId();
-            modelBuilder.Model.GetEntityTypes()
-                .Where(entityType => typeof(IMustHaveUser).IsAssignableFrom(entityType.ClrType))
-                .ToList()
-                .ForEach(entityType =>
-                {
-                    modelBuilder.Entity(entityType.ClrType)
-                        .HasQueryFilter(ConvertFilterExpression<IMustHaveUser>(e => currentUserId.HasValue && e.UserId == currentUserId.Value, entityType.ClrType));
-                });
-
-            modelBuilder.Model.GetEntityTypes()
-                .Where(entityType => typeof(IMayHaveUser).IsAssignableFrom(entityType.ClrType))
-                .ToList()
-                .ForEach(entityType =>
-                {
-                    modelBuilder.Entity(entityType.ClrType)
-                        .HasQueryFilter(ConvertFilterExpression<IMayHaveUser>(e => !e.UserId.HasValue || e.UserId == currentUserId, entityType.ClrType));
-                });
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                ConfigureGlobalFiltersMethodInfo
+                    .MakeGenericMethod(entityType.ClrType)
+                    .Invoke(this, new object[] { modelBuilder, entityType });
+            }
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
@@ -87,7 +147,7 @@ namespace Shoppy.Data
         private void ApplyAuditedProperties()
         {
             var entries = ChangeTracker.Entries().Where(e =>
-                e.Entity is ICreationTime && e.State == EntityState.Added ||
+                (e.Entity is ICreationTime || e.Entity is IMustHaveUser) && e.State == EntityState.Added ||
                 e.Entity is IModificationTime && e.State == EntityState.Modified ||
                 e.Entity is ISoftDelete && e.State == EntityState.Deleted);
 
@@ -104,9 +164,12 @@ namespace Shoppy.Data
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        ((ICreationTime)entry.Entity).CreationTime = DateTimeOffset.UtcNow;
+                        if(entry.Entity is ICreationTime creationTime)
+                        creationTime.CreationTime = DateTimeOffset.UtcNow;
                         if (entry.Entity is ICreationAudited creationAudited)
                             creationAudited.CreationUserId = currentUserId;
+                        if (currentUserId.HasValue && entry.Entity is IMustHaveUser mustHaveUser)
+                            mustHaveUser.UserId = currentUserId.Value;
                         break;
                     case EntityState.Modified:
                         ((IModificationTime)entry.Entity).ModificationTime = DateTimeOffset.UtcNow;
@@ -122,6 +185,41 @@ namespace Shoppy.Data
                             deletedAutidedEntity.DeletionUserId = currentUserId;
                         break;
                 }
+            }
+        }
+
+        protected virtual Expression<Func<T, bool>> CombineExpressions<T>(Expression<Func<T, bool>> expression1, Expression<Func<T, bool>> expression2)
+        {
+            var parameter = Expression.Parameter(typeof(T));
+
+            var leftVisitor = new ReplaceExpressionVisitor(expression1.Parameters[0], parameter);
+            var left = leftVisitor.Visit(expression1.Body);
+
+            var rightVisitor = new ReplaceExpressionVisitor(expression2.Parameters[0], parameter);
+            var right = rightVisitor.Visit(expression2.Body);
+
+            return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(left, right), parameter);
+        }
+
+        class ReplaceExpressionVisitor : ExpressionVisitor
+        {
+            private readonly Expression _oldValue;
+            private readonly Expression _newValue;
+
+            public ReplaceExpressionVisitor(Expression oldValue, Expression newValue)
+            {
+                _oldValue = oldValue;
+                _newValue = newValue;
+            }
+
+            public override Expression Visit(Expression node)
+            {
+                if (node == _oldValue)
+                {
+                    return _newValue;
+                }
+
+                return base.Visit(node);
             }
         }
     }
