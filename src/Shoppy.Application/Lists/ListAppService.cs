@@ -6,7 +6,7 @@ using Shoppy.Core.Lists;
 
 namespace Shoppy.Application.Lists
 {
-    public class ListAppService : AppService<List, ListDto, Guid, CreateListDto, ListDto>, IListAppService
+    public class ListAppService : AppService<List, ListDto, Guid, CreateListDto, UpdateListDto>, IListAppService
     {
         public ListAppService(IRepository<List, Guid> repository) : base(repository)
         {

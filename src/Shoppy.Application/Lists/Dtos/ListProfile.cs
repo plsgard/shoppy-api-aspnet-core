@@ -9,6 +9,7 @@ namespace Shoppy.Application.Lists.Dtos
         {
             CreateMap<List, ListDto>().ReverseMap();
             CreateMap<CreateListDto, List>();
+            CreateMap<UpdateListDto, List>();
         }
     }
 }

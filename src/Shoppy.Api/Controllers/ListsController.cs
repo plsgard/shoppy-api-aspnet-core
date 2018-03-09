@@ -82,7 +82,7 @@ namespace Shoppy.Api.Controllers
         [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ListDto), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Put(Guid id, [FromBody]ListDto value)
+        public async Task<IActionResult> Put(Guid id, [FromBody]UpdateListDto value)
         {
             if (value == null || value.Id != id || !ModelState.IsValid)
                 return BadRequest(ModelState);

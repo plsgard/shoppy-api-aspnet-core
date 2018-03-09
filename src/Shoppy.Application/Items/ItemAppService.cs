@@ -7,7 +7,7 @@ using Shoppy.Core.Items;
 
 namespace Shoppy.Application.Items
 {
-    public class ItemAppService : AppService<Item, ItemDto, Guid, CreateItemDto, ItemDto, GetAllItemsDto>, IItemAppService
+    public class ItemAppService : AppService<Item, ItemDto, Guid, CreateItemDto, UpdateItemDto, GetAllItemsDto>, IItemAppService
     {
         public ItemAppService(IRepository<Item, Guid> repository) : base(repository)
         {
