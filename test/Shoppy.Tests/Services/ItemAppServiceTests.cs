@@ -105,5 +105,46 @@ namespace Shoppy.Tests.Services
             await UseDbContextAsync(async context =>
                 Assert.Equal(2, await context.Items.CountAsync(i => i.Name == itemName)));
         }
+
+        [Fact]
+        public async Task Create_Index_GreaterThanExistingMax_Plus10()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("list")).Id;
+            var itemName = "item1";
+            await CreateItem(listId, itemName);
+            await CreateItem(listId, itemName, 10);
+
+            var itemDto = await _itemAppService.Create(new CreateItemDto
+            {
+                Name = "item2",
+                ListId = listId
+            });
+            Assert.Equal(20, itemDto.Index);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(20, (await context.Items.FirstAsync(i => i.Id == itemDto.Id)).Index));
+        }
+
+        [Fact]
+        public async Task Create_Index_0ForFirst()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("list")).Id;
+
+            var itemDto = await _itemAppService.Create(new CreateItemDto
+            {
+                Name = "item2",
+                ListId = listId
+            });
+            Assert.Equal(0, itemDto.Index);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(0, (await context.Items.FirstAsync(i => i.Id == itemDto.Id)).Index));
+        }
     }
 }
