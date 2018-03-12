@@ -51,5 +51,28 @@ namespace Shoppy.Tests.Services
             await UseDbContextAsync(async context =>
                 Assert.Equal(expectedResult, (await context.Lists.IgnoreQueryFilters().FirstAsync(l => l.Id == listDto.Id)).Name));
         }
+
+        [Fact]
+        public async Task Create_Name_CanCreateTwoListWithSameName_OnSameUser()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            var listName = "list1";
+            var list = await CreateList(listName);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(1, await context.Lists.CountAsync(i => i.Name == listName)));
+
+            var listDto = await _listAppService.Create(new CreateListDto
+            {
+                Name = listName
+            });
+            Assert.NotEqual(list.Id, listDto.Id);
+            Assert.Equal(list.Name, listDto.Name);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(2, await context.Lists.CountAsync(i => i.Name == listName)));
+        }
     }
 }

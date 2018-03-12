@@ -54,5 +54,56 @@ namespace Shoppy.Tests.Services
             await UseDbContextAsync(async context =>
                 Assert.Equal(expectedResult, (await context.Items.IgnoreQueryFilters().FirstAsync(l => l.Id == itemDto.Id)).Name));
         }
+
+        [Fact]
+        public async Task Create_Name_CanCreateTwoItemWithSameName_OnSameUser_OnSameList()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("list")).Id;
+            var itemName = "item1";
+            var item = await CreateItem(listId, itemName);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(1, await context.Items.CountAsync(i => i.Name == itemName)));
+
+            var itemDto = await _itemAppService.Create(new CreateItemDto
+            {
+                Name = itemName,
+                ListId = listId
+            });
+            Assert.NotEqual(item.Id, itemDto.Id);
+            Assert.Equal(item.Name, itemDto.Name);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(2, await context.Items.CountAsync(i => i.Name == itemName)));
+        }
+
+        [Fact]
+        public async Task Create_Name_CanCreateTwoItemWithSameName_OnSameUser_DifferentList()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("list")).Id;
+            var listId2 = (await CreateList("list2")).Id;
+            var itemName = "item1";
+            var item = await CreateItem(listId, itemName);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(1, await context.Items.CountAsync(i => i.Name == itemName)));
+
+            var itemDto = await _itemAppService.Create(new CreateItemDto
+            {
+                Name = itemName,
+                ListId = listId2
+            });
+            Assert.NotEqual(item.Id, itemDto.Id);
+            Assert.Equal(item.Name, itemDto.Name);
+
+            await UseDbContextAsync(async context =>
+                Assert.Equal(2, await context.Items.CountAsync(i => i.Name == itemName)));
+        }
     }
 }
