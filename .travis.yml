@@ -5,6 +5,9 @@ install:
 - dotnet restore src/
 script:
 - dotnet build --configuration Release src/
+- cd Shoppy.Api
+- dotnet ef database update
+- cd ..
 - dotnet test test/Shoppy.Tests/Shoppy.Tests.csproj
 deploy:
   provider: azure_web_apps
