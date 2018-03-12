@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -20,9 +21,7 @@ namespace Shoppy.Data
 
             // Look for any users.
             if (context.Users.Any())
-            {
                 return; // DB has been seeded
-            }
 
             await CreateDefaultUserAndRoleForApplication(userManager, roleManager, logger, configuration);
         }
@@ -42,10 +41,31 @@ namespace Shoppy.Data
         private static async Task CreateDefaultAdministratorRole(RoleManager<Role> roleManager, ILogger<DbInitializer> logger, string administratorRole)
         {
             logger.LogInformation($"Create the role `{administratorRole}` for application");
-            var identityResult = await roleManager.CreateAsync(new Role(administratorRole));
+            var role = new Role(administratorRole);
+            var identityResult = await roleManager.CreateAsync(role);
             if (identityResult.Succeeded)
             {
                 logger.LogDebug($"Created the role `{administratorRole}` successfully");
+                var result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Users, AppConsts.Policies.ManageActions.All.ToString()));
+                if (result.Succeeded)
+                {
+                    logger.LogDebug($"Added the claim `{AppConsts.Policies.Users}` to the `{administratorRole}` role successfully");
+                    result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Accounts, AppConsts.Policies.ManageActions.All.ToString()));
+                    if (result.Succeeded)
+                        logger.LogDebug($"Added the claim `{AppConsts.Policies.Accounts}` to the `{administratorRole}` role successfully");
+                    else
+                    {
+                        var exception = new ApplicationException($"Claim `{AppConsts.Policies.Accounts}` for role `{administratorRole}` cannot be added");
+                        logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
+                        throw exception;
+                    }
+                }
+                else
+                {
+                    var exception = new ApplicationException($"Claim `{AppConsts.Policies.Users}` for role `{administratorRole}` cannot be added");
+                    logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
+                    throw exception;
+                }
             }
             else
             {

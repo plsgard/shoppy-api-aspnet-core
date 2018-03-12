@@ -19,6 +19,7 @@ using Shoppy.Application.Items;
 using Shoppy.Application.Lists;
 using Shoppy.Application.Session;
 using Shoppy.Application.Users;
+using Shoppy.Core;
 using Shoppy.Core.Data;
 using Shoppy.Core.Roles;
 using Shoppy.Core.Session;
@@ -142,6 +143,12 @@ namespace Shoppy.Api
                         ClockSkew = TimeSpan.Zero
                     };
                 });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(AppConsts.Policies.UserManager, policy => policy.RequireClaim(AppConsts.Policies.Users, AppConsts.Policies.ManageActions.All.ToString()));
+                options.AddPolicy(AppConsts.Policies.AccountRegister, policy => policy.RequireClaim(AppConsts.Policies.Accounts, AppConsts.Policies.ManageActions.All.ToString(), AppConsts.Policies.ManageActions.Create.ToString()));
+            });
         }
 
         private void ConfigureDatabase(IServiceCollection services)

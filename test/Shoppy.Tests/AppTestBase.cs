@@ -1,7 +1,11 @@
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using Shoppy.Core.Items;
 using Shoppy.Core.Lists;
 using Shoppy.Core.Session;
 using Shoppy.Core.Users;
@@ -10,10 +14,12 @@ using Xunit;
 
 namespace Shoppy.Tests
 {
+    [Collection("Services")]
     public abstract class AppTestBase : IDisposable
     {
-        private Mock<IAppSession> _mockSession;
-        private DbContextOptions<ShoppyContext> _dbContextOptions;
+        private readonly Mock<IAppSession> _mockSession;
+        private readonly DbContextOptions<ShoppyContext> _dbContextOptions;
+        protected ShoppyContext Context { get; }
 
         protected AppTestBase()
         {
@@ -22,6 +28,8 @@ namespace Shoppy.Tests
                 .Options;
 
             _mockSession = new Mock<IAppSession>();
+
+            Context = GetDbContext();
         }
 
         private ShoppyContext GetDbContext()
@@ -36,11 +44,8 @@ namespace Shoppy.Tests
 
         protected async Task UseDbContextAsync(Func<ShoppyContext, Task> action)
         {
-            using (var context = GetDbContext())
-            {
-                await action(context);
-                await context.SaveChangesAsync();
-            }
+            await action(Context);
+            await Context.SaveChangesAsync();
         }
 
         protected async Task<List> CreateList(string name)
@@ -53,6 +58,23 @@ namespace Shoppy.Tests
             await UseDbContextAsync(async context =>
             {
                 await context.Lists.AddAsync(entity);
+                await context.SaveChangesAsync();
+            });
+
+            return entity;
+        }
+
+        protected async Task<Item> CreateItem(Guid listId, string name)
+        {
+            var entity = new Item
+            {
+                ListId = listId,
+                Name = name
+            };
+
+            await UseDbContextAsync(async context =>
+            {
+                await context.Items.AddAsync(entity);
                 await context.SaveChangesAsync();
             });
 
@@ -80,6 +102,33 @@ namespace Shoppy.Tests
 
         public void Dispose()
         {
+            Context?.Dispose();
         }
+    }
+
+    public class AppTestsBase : IDisposable
+    {
+        public AppTestsBase()
+        {
+            InitializeMappings();
+        }
+
+        private void InitializeMappings()
+        {
+            Mapper.Initialize(cfg => cfg.AddProfiles(Assembly.Load("Shoppy.Application")));
+        }
+
+        public void Dispose()
+        {
+            Mapper.Reset();
+        }
+    }
+
+    [CollectionDefinition("Services")]
+    public class ServicesCollection : ICollectionFixture<AppTestsBase>
+    {
+        // This class has no code, and is never created. Its purpose is simply
+        // to be the place to apply [CollectionDefinition] and all the
+        // ICollectionFixture<> interfaces.
     }
 }

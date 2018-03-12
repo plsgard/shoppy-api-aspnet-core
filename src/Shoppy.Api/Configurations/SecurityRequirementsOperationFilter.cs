@@ -17,6 +17,12 @@ namespace Shoppy.Api.Configurations
                     .Select(c => c.Roles).Union(context.ApiDescription.ActionAttributes().OfType<AuthorizeAttribute>()
                         .Select(c => c.Roles)).Distinct().Where(c => !string.IsNullOrWhiteSpace(c));
 
+                var policies = context.ApiDescription.ControllerAttributes().OfType<AuthorizeAttribute>()
+                    .Select(c => c.Policy).Union(context.ApiDescription.ActionAttributes().OfType<AuthorizeAttribute>()
+                        .Select(c => c.Policy)).Distinct().Where(c => !string.IsNullOrWhiteSpace(c));
+
+                var allRights = roles.Union(policies);
+
                 if (!operation.Responses.ContainsKey(((int)HttpStatusCode.Unauthorized).ToString()))
                     operation.Responses.Add(((int)HttpStatusCode.Unauthorized).ToString(), new Response { Description = HttpStatusCode.Unauthorized.ToString() });
                 if (!operation.Responses.ContainsKey(((int)HttpStatusCode.Forbidden).ToString()))
@@ -25,7 +31,7 @@ namespace Shoppy.Api.Configurations
                 {
                     new Dictionary<string, IEnumerable<string>>
                     {
-                        {"Bearer", roles}
+                        {"Bearer", allRights}
                     }
                 };
             }
