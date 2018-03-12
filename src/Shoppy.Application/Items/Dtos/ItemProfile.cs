@@ -10,6 +10,7 @@ namespace Shoppy.Application.Items.Dtos
             CreateMap<Item, ItemDto>().ReverseMap();
             CreateMap<CreateItemDto, Item>();
             CreateMap<UpdateItemDto, Item>();
+            CreateMap<ItemDto, UpdateItemDto>();
         }
     }
 }

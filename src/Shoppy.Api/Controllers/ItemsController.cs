@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Shoppy.Application.Items;
 using Shoppy.Application.Items.Dtos;
@@ -13,7 +14,7 @@ namespace Shoppy.Api.Controllers
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class ItemsController : Controller
+    public class ItemsController : BaseAppController
     {
         private readonly IItemAppService _itemAppService;
 
@@ -88,6 +89,32 @@ namespace Shoppy.Api.Controllers
                 return BadRequest(ModelState);
 
             return Ok(await _itemAppService.Update(value));
+        }
+
+        /// <summary>
+        /// Updates partially an existing shopping item.
+        /// </summary>
+        /// <param name="id">ID of the item to update.</param>
+        /// <param name="value">A partial item with some values to update.</param>
+        /// <returns>Returns the newly-updated item.</returns>
+        /// <response code="200">Returns newly-updated item.</response>            
+        /// <response code="400">If the item is null or if the item does not exists, or if the item to update is not valid.</response>            
+        [HttpPatch("{id:guid}")]
+        [ProducesResponseType(typeof(ItemDto), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Patch(Guid id, [FromBody]JsonPatchDocument<UpdateItemDto> value)
+        {
+            if (value == null || !ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var itemDto = await _itemAppService.Get(id);
+            if (itemDto == null)
+                return BadRequest(id);
+
+            var existingUpdateItemDto = ObjectMapper.Map<UpdateItemDto>(itemDto);
+            value.ApplyTo(existingUpdateItemDto);
+
+            return Ok(await _itemAppService.Update(existingUpdateItemDto));
         }
 
         /// <summary>
