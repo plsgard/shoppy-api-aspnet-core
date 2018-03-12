@@ -32,7 +32,7 @@ namespace Shoppy.Api.Controllers
         [HttpPost("register")]
         [ProducesResponseType(typeof(UserDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [Authorize(AppConsts.Policies.AccountRegister)]
+        [Authorize(Roles = AppConsts.Roles.Administrator)]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (model == null || !ModelState.IsValid)

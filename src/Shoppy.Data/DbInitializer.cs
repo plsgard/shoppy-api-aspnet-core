@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -46,26 +45,26 @@ namespace Shoppy.Data
             if (identityResult.Succeeded)
             {
                 logger.LogDebug($"Created the role `{administratorRole}` successfully");
-                var result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Users, AppConsts.Policies.ManageActions.All.ToString()));
-                if (result.Succeeded)
-                {
-                    logger.LogDebug($"Added the claim `{AppConsts.Policies.Users}` to the `{administratorRole}` role successfully");
-                    result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Accounts, AppConsts.Policies.ManageActions.All.ToString()));
-                    if (result.Succeeded)
-                        logger.LogDebug($"Added the claim `{AppConsts.Policies.Accounts}` to the `{administratorRole}` role successfully");
-                    else
-                    {
-                        var exception = new ApplicationException($"Claim `{AppConsts.Policies.Accounts}` for role `{administratorRole}` cannot be added");
-                        logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
-                        throw exception;
-                    }
-                }
-                else
-                {
-                    var exception = new ApplicationException($"Claim `{AppConsts.Policies.Users}` for role `{administratorRole}` cannot be added");
-                    logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
-                    throw exception;
-                }
+                //var result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Claims.UsersRights, AppConsts.Policies.ManageActions.All.ToString()));
+                //if (result.Succeeded)
+                //{
+                //    logger.LogDebug($"Added the claim `{AppConsts.Policies.Claims.UsersRights}` to the `{administratorRole}` role successfully");
+                //    result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Claims.AccountsRights, AppConsts.Policies.ManageActions.All.ToString()));
+                //    if (result.Succeeded)
+                //        logger.LogDebug($"Added the claim `{AppConsts.Policies.Claims.AccountsRights}` to the `{administratorRole}` role successfully");
+                //    else
+                //    {
+                //        var exception = new ApplicationException($"Claim `{AppConsts.Policies.Claims.AccountsRights}` for role `{administratorRole}` cannot be added");
+                //        logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
+                //        throw exception;
+                //    }
+                //}
+                //else
+                //{
+                //    var exception = new ApplicationException($"Claim `{AppConsts.Policies.Claims.AccountsRights}` for role `{administratorRole}` cannot be added");
+                //    logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
+                //    throw exception;
+                //}
             }
             else
             {

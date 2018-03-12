@@ -9,8 +9,11 @@
 
         public static class Policies
         {
-            public const string Users = "Users";
-            public const string UserManager = Users + "_Manager";
+            public static class Claims
+            {
+                public const string UsersRights = "Users";
+                public const string AccountsRights = "Accounts";
+            }
 
             public enum ManageActions
             {
@@ -21,8 +24,15 @@
                 List
             }
 
-            public const string Accounts = "Accounts";
-            public const string AccountRegister = Accounts + "_Register";
+            public static class Accounts
+            {
+                public const string Register = "AccountRegister";
+            }
+
+            public static class Users
+            {
+                public const string Manager = "UserManager";
+            }
         }
     }
 }

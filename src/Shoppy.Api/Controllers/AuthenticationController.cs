@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -61,18 +61,24 @@ namespace Shoppy.Api.Controllers
                 return Unauthorized();
 
             var dateTime = DateTime.UtcNow.AddDays(1);
+            var roles = await _userManager.GetRolesAsync(user);
             var claims = new[]
             {
-                        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(dateTime).ToString(), ClaimValueTypes.Integer64)
-                    };
+            };
+
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Token");
+
+            if (roles.Any())
+                claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var token = new JwtSecurityToken
             (
                 _configuration["Auth:Token:Issuer"],
                 _configuration["Auth:Token:Audience"],
-                claims,
+                claimsIdentity.Claims,
                 expires: dateTime,
                 notBefore: DateTime.UtcNow,
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey

@@ -13,7 +13,7 @@ namespace Shoppy.Api.Controllers
     [ApiVersion("1")]
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize(AppConsts.Policies.UserManager)]
+    [Authorize(Roles = AppConsts.Roles.Administrator)]
     public class UsersController : Controller
     {
         private readonly IUserAppService _userAppService;

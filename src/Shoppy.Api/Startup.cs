@@ -144,11 +144,14 @@ namespace Shoppy.Api
                     };
                 });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy(AppConsts.Policies.UserManager, policy => policy.RequireClaim(AppConsts.Policies.Users, AppConsts.Policies.ManageActions.All.ToString()));
-                options.AddPolicy(AppConsts.Policies.AccountRegister, policy => policy.RequireClaim(AppConsts.Policies.Accounts, AppConsts.Policies.ManageActions.All.ToString(), AppConsts.Policies.ManageActions.Create.ToString()));
-            });
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy(AppConsts.Policies.Users.Manager, policy =>
+            //    {
+            //        policy.RequireClaim(AppConsts.Policies.Claims.UsersRights, AppConsts.Policies.ManageActions.All.ToString());
+            //    });
+            //    options.AddPolicy(AppConsts.Policies.Accounts.Register, policy => policy.RequireClaim(AppConsts.Policies.Claims.AccountsRights, AppConsts.Policies.ManageActions.All.ToString(), AppConsts.Policies.ManageActions.Create.ToString()));
+            //});
         }
 
         private void ConfigureDatabase(IServiceCollection services)
