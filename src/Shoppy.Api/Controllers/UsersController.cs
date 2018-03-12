@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shoppy.Application.Users;
 using Shoppy.Application.Users.Dtos;
+using Shoppy.Core;
 
 namespace Shoppy.Api.Controllers
 {
     [ApiVersion("1")]
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
+    [Authorize(Roles = AppConsts.Roles.Administrator)]
     public class UsersController : Controller
     {
         private readonly IUserAppService _userAppService;

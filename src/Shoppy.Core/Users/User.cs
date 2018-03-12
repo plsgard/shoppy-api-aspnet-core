@@ -34,6 +34,13 @@ namespace Shoppy.Core.Users
             UserName = userName;
         }
 
+        public User(string userName, string firstName, string lastName)
+        {
+            Email = UserName = userName;
+            FirstName = firstName;
+            LastName = lastName;
+        }
+
         public DateTimeOffset CreationTime { get; set; }
         public Guid? CreationUserId { get; set; }
         public DateTimeOffset? ModificationTime { get; set; }

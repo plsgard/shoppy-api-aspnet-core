@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shoppy.Application.Authentication.Dtos;
 using Shoppy.Application.Users;
 using Shoppy.Application.Users.Dtos;
+using Shoppy.Core;
 
 namespace Shoppy.Api.Controllers
 {
@@ -31,7 +32,7 @@ namespace Shoppy.Api.Controllers
         [HttpPost("register")]
         [ProducesResponseType(typeof(UserDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [AllowAnonymous]
+        [Authorize(Roles = AppConsts.Roles.Administrator)]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
             if (model == null || !ModelState.IsValid)
