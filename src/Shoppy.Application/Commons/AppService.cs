@@ -29,6 +29,8 @@ namespace Shoppy.Application.Commons
 
         public virtual async Task<TEntityDto> Create(TCreateEntityDto input)
         {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+
             Normalize(input);
             Validate(input);
 
@@ -38,6 +40,8 @@ namespace Shoppy.Application.Commons
 
         public virtual async Task<TEntityDto> Update(TUpdateEntityDto input)
         {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+
             Normalize(input);
             Validate(input);
 
@@ -75,7 +79,8 @@ namespace Shoppy.Application.Commons
 
         private IOrderedQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetAllDto input)
         {
-            if (input is ISorted sorted) return sorted.SortType == SortType.DESC ? query.OrderByDescending(sorted.SortProperty) : query.OrderBy(sorted.SortProperty);
+            if (query == null) throw new ArgumentNullException(nameof(query));
+            if (input != null && input is ISorted sorted) return sorted.SortType == SortType.DESC ? query.OrderByDescending(sorted.SortProperty) : query.OrderBy(sorted.SortProperty);
             return query.OrderBy(c => c.Id);
         }
 
