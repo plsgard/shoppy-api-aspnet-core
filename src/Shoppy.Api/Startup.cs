@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -105,6 +106,7 @@ namespace Shoppy.Api
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.AssumeDefaultVersionWhenUnspecified = true;
             });
+            services.AddCors();
         }
 
         private void ConfigureInjection(IServiceCollection services)
@@ -211,6 +213,18 @@ namespace Shoppy.Api
                         description.GroupName);
                 }
             });
+
+            app.UseCors(builder =>
+                builder.WithOrigins(
+                    // App:CorsOrigins in appsettings.json can contain more than one address separated by comma.
+                    Configuration["App:CorsOrigins"]
+                        .Split(",", StringSplitOptions.RemoveEmptyEntries)
+                        .Select(o => o.TrimEnd('/'))
+                        .ToArray()
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+            );
 
             app.UseAuthentication();
             app.UseMvc();
