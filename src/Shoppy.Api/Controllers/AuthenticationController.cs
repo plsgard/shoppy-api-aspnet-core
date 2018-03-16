@@ -1,14 +1,11 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
-using System.Text;
+﻿using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using Shoppy.Api.Authentication;
+using Shoppy.Api.Models.Authentication;
+using Shoppy.Api.Models.Configuration;
 using Shoppy.Application.Authentication.Dtos;
 using Shoppy.Core.Users;
 
@@ -21,19 +18,16 @@ namespace Shoppy.Api.Controllers
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
-        private readonly IConfiguration _configuration;
+        private readonly IJwtFactory _jwtFactory;
+        private readonly TokenAuthenticationOptions _jwtOptions;
 
-        public AuthenticationController(SignInManager<User> signInManager, UserManager<User> userManager, IConfiguration configuration)
+        public AuthenticationController(SignInManager<User> signInManager, UserManager<User> userManager, IJwtFactory jwtFactory, IOptions<TokenAuthenticationOptions> jwtOptions)
         {
             _signInManager = signInManager;
             _userManager = userManager;
-            _configuration = configuration;
+            _jwtFactory = jwtFactory;
+            _jwtOptions = jwtOptions.Value;
         }
-
-        private static long ToUnixEpochDate(DateTime date)
-            => (long)Math.Round((date.ToUniversalTime() -
-                                 new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero))
-                .TotalSeconds);
 
         /// <summary>
         /// Generates an authentication token for the provided user login.
@@ -60,33 +54,11 @@ namespace Shoppy.Api.Controllers
             if (!result.Succeeded)
                 return Unauthorized();
 
-            var dateTime = DateTime.UtcNow.AddDays(1);
             var roles = await _userManager.GetRolesAsync(user);
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(dateTime).ToString(), ClaimValueTypes.Integer64)
-            };
 
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(claims, "Token");
-
-            if (roles.Any())
-                claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-            var token = new JwtSecurityToken
-            (
-                _configuration["Auth:Token:Issuer"],
-                _configuration["Auth:Token:Audience"],
-                claimsIdentity.Claims,
-                expires: dateTime,
-                notBefore: DateTime.UtcNow,
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey
-                        (Encoding.UTF8.GetBytes(_configuration["Auth:Token:Key"])),
-                    SecurityAlgorithms.HmacSha256)
-            );
-
-            return Ok(new TokenDto { Id = token.Id, ExpirationDate = token.ValidTo, Token = new JwtSecurityTokenHandler().WriteToken(token) });
+            var generateClaimsIdentity = _jwtFactory.GenerateClaimsIdentity(model.Username, user.Id, roles);
+            var jwt = await TokenDto.GenerateJwt(generateClaimsIdentity, _jwtFactory, model.Username, _jwtOptions);
+            return Ok(jwt);
         }
     }
 }

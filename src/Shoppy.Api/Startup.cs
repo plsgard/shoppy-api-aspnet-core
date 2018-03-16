@@ -15,12 +15,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Shoppy.Api.Authentication;
 using Shoppy.Api.Configurations;
+using Shoppy.Api.Models.Configuration;
 using Shoppy.Application.Items;
 using Shoppy.Application.Lists;
 using Shoppy.Application.Session;
 using Shoppy.Application.Users;
-using Shoppy.Core;
 using Shoppy.Core.Data;
 using Shoppy.Core.Roles;
 using Shoppy.Core.Session;
@@ -111,6 +112,7 @@ namespace Shoppy.Api
 
         private void ConfigureInjection(IServiceCollection services)
         {
+            services.AddSingleton<IJwtFactory, JwtFactory>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
             services.AddTransient<IItemAppService, ItemAppService>();
@@ -121,6 +123,35 @@ namespace Shoppy.Api
 
         private void ConfigureSecurity(IServiceCollection services)
         {
+            // jwt wire up
+            // Get options from app settings
+            var jwtAppSettingOptions = Configuration.GetSection("Auth:Token").Get<TokenAuthenticationOptions>();
+
+            // Configure TokenAuthenticationOptions
+            SecurityKey signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtAppSettingOptions.Key));
+            services.Configure<TokenAuthenticationOptions>(options =>
+            {
+                options.Issuer = jwtAppSettingOptions.Issuer;
+                options.Audience = jwtAppSettingOptions.Audience;
+                options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+            });
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = jwtAppSettingOptions.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = jwtAppSettingOptions.Audience,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+
+                RequireExpirationTime = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -129,21 +160,9 @@ namespace Shoppy.Api
                 })
                 .AddJwtBearer(jwtBearerOptions =>
                 {
+                    jwtBearerOptions.ClaimsIssuer = jwtAppSettingOptions.Issuer;
+                    jwtBearerOptions.TokenValidationParameters = tokenValidationParameters;
                     jwtBearerOptions.SaveToken = true;
-                    jwtBearerOptions.RequireHttpsMetadata = false;
-                    jwtBearerOptions.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateActor = false,
-                        ValidateAudience = true,
-                        ValidateIssuer = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = Configuration["Auth:Token:Issuer"],
-                        ValidAudience = Configuration["Auth:Token:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes
-                            (Configuration["Auth:Token:Key"])),
-                        ClockSkew = TimeSpan.Zero
-                    };
                 });
 
             //services.AddAuthorization(options =>
@@ -175,7 +194,8 @@ namespace Shoppy.Api
                     };
                     options.Password = new PasswordOptions
                     {
-                        RequiredLength = User.MinPasswordLength
+                        RequiredLength = User.MinPasswordLength,
+                        RequireNonAlphanumeric = false
                     };
                     options.Lockout = new LockoutOptions
                     {
