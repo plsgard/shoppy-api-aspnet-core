@@ -13,7 +13,7 @@ namespace Shoppy.Api.Controllers
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class ListsController : Controller
+    public class ListsController : BaseAppController
     {
         private readonly IListAppService _listAppService;
 
@@ -102,6 +102,25 @@ namespace Shoppy.Api.Controllers
         {
             await _listAppService.Delete(id);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Duplicates an existing shopping list with unpicked items to restart.
+        /// </summary>
+        /// <param name="value">The list to create.</param>
+        /// <returns>A newly-created list with its unique id.</returns>
+        /// <response code="201">Returns the newly-created list.</response>
+        /// <response code="400">If the list is null or not valid.</response>            
+        [HttpPost]
+        [ProducesResponseType(typeof(ListDto), (int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Duplicate([FromBody]DuplicateListDto value)
+        {
+            if (value == null || !ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var listDto = await _listAppService.Duplicate(value);
+            return CreatedAtAction(nameof(Get), new { id = listDto.Id }, listDto);
         }
     }
 }

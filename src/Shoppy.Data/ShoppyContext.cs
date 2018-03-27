@@ -164,8 +164,8 @@ namespace Shoppy.Data
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        if(entry.Entity is ICreationTime creationTime)
-                        creationTime.CreationTime = DateTimeOffset.UtcNow;
+                        if (entry.Entity is ICreationTime creationTime)
+                            creationTime.CreationTime = DateTimeOffset.UtcNow;
                         if (entry.Entity is ICreationAudited creationAudited)
                             creationAudited.CreationUserId = currentUserId;
                         if (currentUserId.HasValue && entry.Entity is IMustHaveUser mustHaveUser)

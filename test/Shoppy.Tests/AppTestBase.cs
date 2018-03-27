@@ -64,13 +64,14 @@ namespace Shoppy.Tests
             return entity;
         }
 
-        protected async Task<Item> CreateItem(Guid listId, string name, int index=0)
+        protected async Task<Item> CreateItem(Guid listId, string name, int index=0, bool picked = false)
         {
             var entity = new Item
             {
                 ListId = listId,
                 Name = name,
-                Index = index
+                Index = index,
+                Picked = picked
             };
 
             await UseDbContextAsync(async context =>
