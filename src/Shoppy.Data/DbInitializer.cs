@@ -30,42 +30,26 @@ namespace Shoppy.Data
         {
             string administratorRole = AppConsts.Roles.Administrator;
             string email = configuration["Data:Default:Admin:UserName"];
+            string password = configuration["Data:Default:Admin:Password"];
 
             await CreateDefaultAdministratorRole(roleManager, logger, administratorRole);
-            var user = await CreateDefaultUser(userManager, logger, email);
-            await SetPasswordForDefaultUser(userManager, logger, email, user, configuration);
+            var user = await CreateDefaultUserWithPassword(userManager, logger, email, password);
             await AddDefaultRoleToDefaultUser(userManager, logger, email, administratorRole, user);
         }
 
         private static async Task CreateDefaultAdministratorRole(RoleManager<Role> roleManager, ILogger<DbInitializer> logger, string administratorRole)
         {
             logger.LogInformation($"Create the role `{administratorRole}` for application");
+            var existingRole = await roleManager.FindByNameAsync(administratorRole);
+            if (existingRole != null)
+            {
+                logger.LogDebug($"Role `{administratorRole}` already exists");
+                return;
+            }
             var role = new Role(administratorRole);
             var identityResult = await roleManager.CreateAsync(role);
             if (identityResult.Succeeded)
-            {
                 logger.LogDebug($"Created the role `{administratorRole}` successfully");
-                //var result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Claims.UsersRights, AppConsts.Policies.ManageActions.All.ToString()));
-                //if (result.Succeeded)
-                //{
-                //    logger.LogDebug($"Added the claim `{AppConsts.Policies.Claims.UsersRights}` to the `{administratorRole}` role successfully");
-                //    result = await roleManager.AddClaimAsync(role, new Claim(AppConsts.Policies.Claims.AccountsRights, AppConsts.Policies.ManageActions.All.ToString()));
-                //    if (result.Succeeded)
-                //        logger.LogDebug($"Added the claim `{AppConsts.Policies.Claims.AccountsRights}` to the `{administratorRole}` role successfully");
-                //    else
-                //    {
-                //        var exception = new ApplicationException($"Claim `{AppConsts.Policies.Claims.AccountsRights}` for role `{administratorRole}` cannot be added");
-                //        logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
-                //        throw exception;
-                //    }
-                //}
-                //else
-                //{
-                //    var exception = new ApplicationException($"Claim `{AppConsts.Policies.Claims.AccountsRights}` for role `{administratorRole}` cannot be added");
-                //    logger.LogError(exception, new AppIdentityResultException(result.Errors).Message);
-                //    throw exception;
-                //}
-            }
             else
             {
                 var exception = new ApplicationException($"Default role `{administratorRole}` cannot be created");
@@ -74,12 +58,12 @@ namespace Shoppy.Data
             }
         }
 
-        private static async Task<User> CreateDefaultUser(UserManager<User> userManager, ILogger<DbInitializer> logger, string email)
+        private static async Task<User> CreateDefaultUserWithPassword(UserManager<User> userManager, ILogger<DbInitializer> logger, string email, string password)
         {
             logger.LogInformation($"Create default user with email `{email}` for application");
             var user = new User(email, "Shoppy", "Administrator");
 
-            var identityResult = await userManager.CreateAsync(user);
+            var identityResult = await userManager.CreateAsync(user, password);
             if (identityResult.Succeeded)
             {
                 logger.LogDebug($"Created default user `{email}` successfully");
@@ -93,23 +77,6 @@ namespace Shoppy.Data
 
             var createdUser = await userManager.FindByEmailAsync(email);
             return createdUser;
-        }
-
-        private static async Task SetPasswordForDefaultUser(UserManager<User> userManager, ILogger<DbInitializer> logger, string email, User user, IConfiguration configuration)
-        {
-            logger.LogInformation($"Set password for default user `{email}`");
-            string password = configuration["Data:Default:Admin:Password"];
-            var identityResult = await userManager.AddPasswordAsync(user, password);
-            if (identityResult.Succeeded)
-            {
-                logger.LogTrace($"Set password `{password}` for default user `{email}` successfully");
-            }
-            else
-            {
-                var exception = new ApplicationException($"Password for the user `{email}` cannot be set");
-                logger.LogError(exception, new AppIdentityResultException(identityResult.Errors).Message);
-                throw exception;
-            }
         }
 
         private static async Task AddDefaultRoleToDefaultUser(UserManager<User> userManager, ILogger<DbInitializer> logger, string email, string administratorRole, User user)

@@ -195,7 +195,9 @@ namespace Shoppy.Api
                     options.Password = new PasswordOptions
                     {
                         RequiredLength = User.MinPasswordLength,
-                        RequireNonAlphanumeric = false
+                        RequireNonAlphanumeric = false,
+                        RequireUppercase = false,
+                        RequireDigit = false
                     };
                     options.Lockout = new LockoutOptions
                     {
