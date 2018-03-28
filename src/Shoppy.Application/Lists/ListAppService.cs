@@ -22,6 +22,8 @@ namespace Shoppy.Application.Lists
             if (input == null) throw new ArgumentNullException(nameof(input));
             
             Validate(input);
+            if(!(await Repository.AnyAsync(l=>l.Id == input.ExistingListId)))
+                throw new ArgumentException($"Unable to duplicate list with id '{input.ExistingListId}' because it does not exists.", nameof(input.ExistingListId));
             Normalize(input);
 
             var existingId = input.ExistingListId;

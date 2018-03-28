@@ -117,5 +117,45 @@ namespace Shoppy.Tests.Services
                 }
             });
         }
+
+        [Fact]
+        public async Task Duplicate_WithoutItems_CreateOnlyNewList()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+            var id = (await CreateList("liste1")).Id;
+
+            var newListId = (await _listAppService.Duplicate(new DuplicateListDto
+            {
+                Name = "liste2",
+                ExistingListId = id
+            })).Id;
+
+            await UseDbContextAsync(async context =>
+            {
+                var list = await context.Lists.SingleOrDefaultAsync(c => c.Id == newListId);
+                Assert.NotNull(list);
+                Assert.NotEqual(id, list.Id);
+                Assert.Equal("liste2", list.Name);
+
+                var newItems = await context.Items.Where(i => i.ListId == newListId).ToListAsync();
+                Assert.NotNull(newItems);
+                Assert.Empty(newItems);
+            });
+        }
+
+        [Fact]
+        public async Task Duplicate_ListDoesNotExists_Exception()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+            var id = Guid.NewGuid();//(await CreateList("liste1")).Id;
+
+            await Assert.ThrowsAsync<ArgumentException>(()=>_listAppService.Duplicate(new DuplicateListDto
+            {
+                Name = "liste2",
+                ExistingListId = id
+            }));
+        }
     }
 }

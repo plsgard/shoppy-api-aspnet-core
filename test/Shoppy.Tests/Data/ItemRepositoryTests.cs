@@ -49,5 +49,23 @@ namespace Shoppy.Tests.Data
                 }
             });
         }
+
+        [Fact]
+        public async Task Duplicate_WithoutItems_NoError()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+            var id = (await CreateList("liste1")).Id;
+
+            var newListId = (await CreateList("liste2")).Id;
+            await _itemRepository.DuplicateOnList(id, newListId);
+
+            await UseDbContextAsync(async context =>
+            {
+                var newItems = await context.Items.Where(i => i.ListId == newListId).ToListAsync();
+                Assert.NotNull(newItems);
+                Assert.Empty(newItems);
+            });
+        }
     }
 }

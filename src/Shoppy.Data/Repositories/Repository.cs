@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Shoppy.Core.Data;
@@ -66,6 +67,11 @@ namespace Shoppy.Data.Repositories
                 throw new ArgumentException($"No entity with key '{key}'.", nameof(key));
             DbSet.Remove(entity);
             await Context.SaveChangesAsync();
+        }
+
+        public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await DbSet.AnyAsync(predicate);
         }
 
         public void Dispose()

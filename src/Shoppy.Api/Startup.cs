@@ -23,6 +23,7 @@ using Shoppy.Application.Lists;
 using Shoppy.Application.Session;
 using Shoppy.Application.Users;
 using Shoppy.Core.Data;
+using Shoppy.Core.Items;
 using Shoppy.Core.Roles;
 using Shoppy.Core.Session;
 using Shoppy.Core.Users;
@@ -115,6 +116,7 @@ namespace Shoppy.Api
             services.AddSingleton<IJwtFactory, JwtFactory>();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+            services.AddScoped<IItemRepository, ItemRepository>();
             services.AddTransient<IItemAppService, ItemAppService>();
             services.AddTransient<IListAppService, ListAppService>();
             services.AddTransient<IUserAppService, UserAppService>();

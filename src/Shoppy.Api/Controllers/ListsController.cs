@@ -111,7 +111,7 @@ namespace Shoppy.Api.Controllers
         /// <returns>A newly-created list with its unique id.</returns>
         /// <response code="201">Returns the newly-created list.</response>
         /// <response code="400">If the list is null or not valid.</response>            
-        [HttpPost]
+        [HttpPost("duplicate")]
         [ProducesResponseType(typeof(ListDto), (int)HttpStatusCode.Created)]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> Duplicate([FromBody]DuplicateListDto value)
