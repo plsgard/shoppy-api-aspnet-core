@@ -11,7 +11,7 @@ using System;
 namespace Shoppy.Data.Migrations
 {
     [DbContext(typeof(ShoppyContext))]
-    [Migration("20180328095512_Create_Share")]
+    [Migration("20180328202358_Create_Share")]
     partial class Create_Share
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -329,9 +329,9 @@ namespace Shoppy.Data.Migrations
             modelBuilder.Entity("Shoppy.Core.Lists.List", b =>
                 {
                     b.HasOne("Shoppy.Core.Users.User", "User")
-                        .WithMany()
+                        .WithMany("Lists")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Shoppy.Core.Shares.Share", b =>

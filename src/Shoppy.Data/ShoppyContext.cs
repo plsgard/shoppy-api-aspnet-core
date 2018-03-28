@@ -137,6 +137,8 @@ namespace Shoppy.Data
             modelBuilder.Entity<Share>().HasKey(s => new {s.ListId, s.UserId});
             modelBuilder.Entity<Share>().HasOne(s => s.List).WithMany(l => l.Shares).HasForeignKey(s => s.ListId);
             modelBuilder.Entity<Share>().HasOne(s => s.User).WithMany(l => l.Shares).HasForeignKey(s => s.UserId);
+
+            modelBuilder.Entity<List>().HasOne(l => l.User).WithMany(u => u.Lists).OnDelete(DeleteBehavior.Restrict);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

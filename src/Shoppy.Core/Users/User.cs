@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Shoppy.Core.Auditing;
+using Shoppy.Core.Lists;
 using Shoppy.Core.Shares;
 
 namespace Shoppy.Core.Users
@@ -41,6 +42,8 @@ namespace Shoppy.Core.Users
         public Guid? DeletionUserId { get; set; }
 
         public virtual ICollection<Share> Shares { get; set; }
+
+        public virtual ICollection<List> Lists { get; set; }
 
         public User()
         {

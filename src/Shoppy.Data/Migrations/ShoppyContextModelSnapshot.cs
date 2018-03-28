@@ -328,9 +328,9 @@ namespace Shoppy.Data.Migrations
             modelBuilder.Entity("Shoppy.Core.Lists.List", b =>
                 {
                     b.HasOne("Shoppy.Core.Users.User", "User")
-                        .WithMany()
+                        .WithMany("Lists")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Shoppy.Core.Shares.Share", b =>
