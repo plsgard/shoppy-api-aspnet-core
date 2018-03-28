@@ -11,9 +11,10 @@ using System;
 namespace Shoppy.Data.Migrations
 {
     [DbContext(typeof(ShoppyContext))]
-    partial class ShoppyContextModelSnapshot : ModelSnapshot
+    [Migration("20180328095512_Create_Share")]
+    partial class Create_Share
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

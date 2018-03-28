@@ -16,7 +16,7 @@ namespace Shoppy.Tests.Services
 
         public ListAppServiceTests()
         {
-            _listAppService = new ListAppService(new Repository<List, Guid>(Context), new ItemRepository(Context));
+            _listAppService = new ListAppService(new ListRepository(Context), new ItemRepository(Context));
         }
 
         [Theory]

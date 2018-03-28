@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Shoppy.Core.Auditing;
+using Shoppy.Core.Shares;
 
 namespace Shoppy.Core.Users
 {
@@ -24,6 +26,22 @@ namespace Shoppy.Core.Users
         [StringLength(MaxPictureUrlLength), Url, DataType(DataType.Url)]
         public string PictureUrl { get; set; }
 
+        public DateTimeOffset CreationTime { get; set; }
+
+        public Guid? CreationUserId { get; set; }
+
+        public DateTimeOffset? ModificationTime { get; set; }
+
+        public Guid? ModificationUserId { get; set; }
+
+        public bool IsDeleted { get; set; }
+
+        public DateTimeOffset? DeletionTime { get; set; }
+
+        public Guid? DeletionUserId { get; set; }
+
+        public virtual ICollection<Share> Shares { get; set; }
+
         public User()
         {
             Id = Guid.NewGuid();
@@ -40,13 +58,5 @@ namespace Shoppy.Core.Users
             FirstName = firstName;
             LastName = lastName;
         }
-
-        public DateTimeOffset CreationTime { get; set; }
-        public Guid? CreationUserId { get; set; }
-        public DateTimeOffset? ModificationTime { get; set; }
-        public Guid? ModificationUserId { get; set; }
-        public bool IsDeleted { get; set; }
-        public DateTimeOffset? DeletionTime { get; set; }
-        public Guid? DeletionUserId { get; set; }
     }
 }

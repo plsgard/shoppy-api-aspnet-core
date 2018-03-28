@@ -14,6 +14,7 @@ using Shoppy.Core.Items;
 using Shoppy.Core.Lists;
 using Shoppy.Core.Roles;
 using Shoppy.Core.Session;
+using Shoppy.Core.Shares;
 using Shoppy.Core.Users;
 
 namespace Shoppy.Data
@@ -25,6 +26,8 @@ namespace Shoppy.Data
         public DbSet<List> Lists { get; set; }
 
         public DbSet<Item> Items { get; set; }
+
+        public DbSet<Share> Shares { get; set; }
 
         private static readonly MethodInfo ConfigureGlobalFiltersMethodInfo = typeof(ShoppyContext).GetMethod(nameof(ConfigureGlobalFilters), BindingFlags.Instance | BindingFlags.NonPublic);
 
@@ -130,6 +133,10 @@ namespace Shoppy.Data
                     .MakeGenericMethod(entityType.ClrType)
                     .Invoke(this, new object[] { modelBuilder, entityType });
             }
+
+            modelBuilder.Entity<Share>().HasKey(s => new {s.ListId, s.UserId});
+            modelBuilder.Entity<Share>().HasOne(s => s.List).WithMany(l => l.Shares).HasForeignKey(s => s.ListId);
+            modelBuilder.Entity<Share>().HasOne(s => s.User).WithMany(l => l.Shares).HasForeignKey(s => s.UserId);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)

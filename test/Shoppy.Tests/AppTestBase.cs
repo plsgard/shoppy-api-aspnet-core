@@ -8,6 +8,7 @@ using Moq;
 using Shoppy.Core.Items;
 using Shoppy.Core.Lists;
 using Shoppy.Core.Session;
+using Shoppy.Core.Shares;
 using Shoppy.Core.Users;
 using Shoppy.Data;
 using Xunit;
@@ -77,6 +78,23 @@ namespace Shoppy.Tests
             await UseDbContextAsync(async context =>
             {
                 await context.Items.AddAsync(entity);
+                await context.SaveChangesAsync();
+            });
+
+            return entity;
+        }
+
+        protected async Task<Share> CreateShare(Guid listId, Guid userId)
+        {
+            var entity = new Share
+            {
+                ListId = listId,
+                UserId = userId
+            };
+
+            await UseDbContextAsync(async context =>
+            {
+                await context.Shares.AddAsync(entity);
                 await context.SaveChangesAsync();
             });
 

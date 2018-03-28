@@ -32,6 +32,20 @@ namespace Shoppy.Data.Repositories
             return DbSet;
         }
 
+        public IQueryable<TEntity> GetAllIncluding(params Expression<Func<TEntity, object>>[] includes)
+        {
+            if (includes == null || !includes.Any())
+                return GetAll();
+
+            var returns = GetAll();
+            foreach (var expression in includes)
+            {
+                returns = returns.Include(expression);
+            }
+
+            return returns;
+        }
+
         public virtual async Task<IList<TEntity>> GetAllListAsync()
         {
             return await GetAll().ToListAsync();

@@ -10,6 +10,7 @@ namespace Shoppy.Core.Data
     {
         Task<TEntity> GetByIdAsync(TPrimaryKey key);
         IQueryable<TEntity> GetAll();
+        IQueryable<TEntity> GetAllIncluding(params Expression<Func<TEntity, object>>[] includes);
         Task<IList<TEntity>> GetAllListAsync();
         Task<TEntity> AddAsync(TEntity entity);
         Task<TEntity> UpdateAsync(TEntity entity);
