@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -33,6 +34,15 @@ namespace Shoppy.Tests
             Context = GetDbContext();
         }
 
+        private readonly Random _random = new Random();
+
+        protected string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[_random.Next(s.Length)]).ToArray());
+        }
+
         private ShoppyContext GetDbContext()
         {
             return new ShoppyContext(_dbContextOptions, _mockSession.Object);
@@ -65,7 +75,7 @@ namespace Shoppy.Tests
             return entity;
         }
 
-        protected async Task<Item> CreateItem(Guid listId, string name, int index=0, bool picked = false)
+        protected async Task<Item> CreateItem(Guid listId, string name, int index = 0, bool picked = false)
         {
             var entity = new Item
             {
@@ -118,6 +128,11 @@ namespace Shoppy.Tests
             });
 
             return entity;
+        }
+
+        protected async Task<User> CreateRandomUser()
+        {
+            return await CreateUser(userName: $"{RandomString(6)}@test.com");
         }
 
         public void Dispose()

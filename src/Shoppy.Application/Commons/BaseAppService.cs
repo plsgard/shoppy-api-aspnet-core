@@ -13,7 +13,7 @@ namespace Shoppy.Application.Commons
 
         protected virtual TEntityDto ToDto(TEntity entity)
         {
-            if (entity == null) throw new ArgumentNullException(nameof(entity));
+            if (entity == null) return default(TEntityDto);
 
             return ObjectMapper.Map<TEntityDto>(entity);
         }
@@ -34,7 +34,7 @@ namespace Shoppy.Application.Commons
                 normalize.Normalize();
         }
 
-        protected void Validate(object input)
+        protected virtual void Validate(object input)
         {
             var context = new System.ComponentModel.DataAnnotations.ValidationContext(input);
             var results = new List<ValidationResult>();

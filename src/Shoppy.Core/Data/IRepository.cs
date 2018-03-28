@@ -14,7 +14,8 @@ namespace Shoppy.Core.Data
         Task<IList<TEntity>> GetAllListAsync();
         Task<TEntity> AddAsync(TEntity entity);
         Task<TEntity> UpdateAsync(TEntity entity);
-        Task DeleteAsync(TPrimaryKey key);
+        Task DeleteAsync(TEntity entity);
         Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
+        bool Any(Expression<Func<TEntity, bool>> predicate);
     }
 }

@@ -22,11 +22,9 @@ namespace Shoppy.Application.Lists
         public async Task<ListDto> Duplicate(DuplicateListDto input)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
-            
-            Validate(input);
-            if(!(await Repository.AnyAsync(l=>l.Id == input.ExistingListId)))
-                throw new ArgumentException($"Unable to duplicate list with id '{input.ExistingListId}' because it does not exists.", nameof(input.ExistingListId));
+
             Normalize(input);
+            Validate(input);
 
             var existingId = input.ExistingListId;
 
@@ -36,6 +34,20 @@ namespace Shoppy.Application.Lists
             await _itemRepository.DuplicateOnList(existingId, newId);
 
             return listDto;
+        }
+
+        public override Task<ListDto> Get(Guid id)
+        {
+            return Task.FromResult(ToDto(_repository.GetAllIncludingShares().SingleOrDefault(l => l.Id == id)));
+        }
+
+        protected override void Validate(object input)
+        {
+            base.Validate(input);
+
+            if (input != null && input is DuplicateListDto duplicate)
+                if (!Repository.Any(l => l.Id == duplicate.ExistingListId))
+                    throw new ArgumentException($"Unable to duplicate list with id '{duplicate.ExistingListId}' because it does not exists.", nameof(duplicate.ExistingListId));
         }
 
         protected override IQueryable<List> CreateFilteredQuery(GetAllListsDto input)

@@ -4,17 +4,18 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Shoppy.Core.Commons;
 using Shoppy.Core.Data;
 
 namespace Shoppy.Data.Repositories
 {
-    public class Repository<TEntity, TPrimaryKey> : BaseRepository, IRepository<TEntity, TPrimaryKey> where TEntity : class
+    public class Repository<TEntity, TPrimaryKey> : BaseRepository, IRepository<TEntity, TPrimaryKey> where TEntity : class, IEntity<TPrimaryKey>
     {
         protected ShoppyContext Context { get; }
 
         protected DbSet<TEntity> DbSet { get; }
 
-        public Repository(ShoppyContext context)
+        protected Repository(ShoppyContext context)
         {
             Context = context;
             DbSet = Context.Set<TEntity>();
@@ -24,7 +25,7 @@ namespace Shoppy.Data.Repositories
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return await DbSet.FindAsync(key);
+            return await GetAll().SingleOrDefaultAsync(s => s.Id.Equals(key));
         }
 
         public virtual IQueryable<TEntity> GetAll()
@@ -73,19 +74,21 @@ namespace Shoppy.Data.Repositories
             return entity;
         }
 
-        public virtual async Task DeleteAsync(TPrimaryKey key)
+        public virtual async Task DeleteAsync(TEntity entity)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            var entity = await DbSet.FindAsync(key);
-            if (entity == null)
-                throw new ArgumentException($"No entity with key '{key}'.", nameof(key));
+            if (entity == null) throw new ArgumentNullException(nameof(entity));
             DbSet.Remove(entity);
             await Context.SaveChangesAsync();
         }
 
         public virtual async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await DbSet.AnyAsync(predicate);
+            return await GetAll().AnyAsync(predicate);
+        }
+
+        public bool Any(Expression<Func<TEntity, bool>> predicate)
+        {
+            return GetAll().Any(predicate);
         }
 
         public void Dispose()

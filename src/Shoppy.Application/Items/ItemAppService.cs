@@ -3,15 +3,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Shoppy.Application.Commons;
 using Shoppy.Application.Items.Dtos;
-using Shoppy.Core.Data;
 using Shoppy.Core.Items;
+using Shoppy.Core.Lists;
 
 namespace Shoppy.Application.Items
 {
     public class ItemAppService : AppService<Item, ItemDto, Guid, CreateItemDto, UpdateItemDto, GetAllItemsDto>, IItemAppService
     {
-        public ItemAppService(IRepository<Item, Guid> repository) : base(repository)
+        private readonly IItemRepository _repository;
+        private readonly IListRepository _listRepository;
+
+        public ItemAppService(IItemRepository repository, IListRepository listRepository) : base(repository)
         {
+            _repository = repository;
+            _listRepository = listRepository;
         }
 
         protected override IQueryable<Item> CreateFilteredQuery(GetAllItemsDto input)
@@ -29,9 +34,18 @@ namespace Shoppy.Application.Items
             Validate(input);
 
             var entity = ToEntity(input);
-            entity.Index = Repository.GetAll().Any() ? Repository.GetAll().Max(i => i.Index) + 10 : 0;
+            var maxIndex = await _repository.GetMaxIndexForList(input.ListId);
+            entity.Index = maxIndex > 0 ? maxIndex + 10 : 0;
 
             return ToDto(await Repository.AddAsync(entity));
+        }
+
+        protected override void Validate(object input)
+        {
+            if (input != null && input is CreateItemDto create)
+                if (!_listRepository.GetAllIncludingShares().Any(i => i.Id == create.ListId))
+                    throw new ArgumentException("The list on which you want to create item doest not exists or is not reachable.", nameof(create.ListId));
+            base.Validate(input);
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Shoppy.Application.Lists;
 using Shoppy.Application.Lists.Dtos;
-using Shoppy.Core.Lists;
 using Shoppy.Data.Repositories;
 using Xunit;
 
@@ -41,6 +40,8 @@ namespace Shoppy.Tests.Services
         [InlineData("test  ", "test")]
         public async Task Update_Name_ShouldBeNormalized_Trimmed(string val, string expectedResult)
         {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
             var listId = (await CreateList("toto")).Id;
             var listDto = await _listAppService.Update(new UpdateListDto
             {
@@ -94,7 +95,7 @@ namespace Shoppy.Tests.Services
 
             await UseDbContextAsync(async context =>
             {
-                var list = await context.Lists.SingleOrDefaultAsync(c=>c.Id == newListId);
+                var list = await context.Lists.SingleOrDefaultAsync(c => c.Id == newListId);
                 Assert.NotNull(list);
                 Assert.NotEqual(id, list.Id);
                 Assert.Equal("liste2", list.Name);
@@ -151,11 +152,123 @@ namespace Shoppy.Tests.Services
             LoginAs(userId);
             var id = Guid.NewGuid();//(await CreateList("liste1")).Id;
 
-            await Assert.ThrowsAsync<ArgumentException>(()=>_listAppService.Duplicate(new DuplicateListDto
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Duplicate(new DuplicateListDto
             {
                 Name = "liste2",
                 ExistingListId = id
             }));
+        }
+
+        [Fact]
+        public async Task Delete_Cannot_ListNoMine_Exception()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            LoginAs(currentUserId);
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Delete(listId));
+        }
+
+        [Fact]
+        public async Task Delete_Cannot_EvenListShareToMe_Exception()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Delete(listId));
+        }
+
+        [Fact]
+        public async Task Update_Cannot_NotMine_Exception()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            LoginAs(currentUserId);
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Update(new UpdateListDto
+            {
+                Id = listId,
+                Name = "toto"
+            }));
+        }
+
+        [Fact]
+        public async Task Update_Cannot_EvenListShareToMe_Exception()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Update(new UpdateListDto
+            {
+                Id = listId,
+                Name = "toto"
+            }));
+        }
+
+        [Fact]
+        public async Task Get_Cannot_NotMine_Null()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            LoginAs(currentUserId);
+            var listDto = await _listAppService.Get(listId);
+            Assert.Null(listDto);
+        }
+
+        [Fact]
+        public async Task Get_Can_ShareWithMe()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            var listDto = await _listAppService.Get(listId);
+            Assert.NotNull(listDto);
+        }
+
+        [Fact]
+        public async Task GetAll_OnlyMine()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            await CreateList("liste1");
+
+            LoginAs(currentUserId);
+            var listId2 = (await CreateList("liste2")).Id;
+
+            var listDto = await _listAppService.GetAll();
+            Assert.NotNull(listDto);
+            Assert.Single(listDto);
+            Assert.Contains(listDto, dto => dto.Id == listId2);
         }
     }
 }

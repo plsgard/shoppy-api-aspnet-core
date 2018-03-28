@@ -7,5 +7,6 @@ namespace Shoppy.Core.Items
     public interface IItemRepository : IRepository<Item, Guid>
     {
         Task DuplicateOnList(Guid originalListId, Guid newListId);
+        Task<int> GetMaxIndexForList(Guid listId);
     }
 }

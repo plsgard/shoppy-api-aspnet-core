@@ -54,7 +54,11 @@ namespace Shoppy.Application.Commons
 
         public virtual async Task Delete(TPrimaryKey id)
         {
-            await Repository.DeleteAsync(id);
+            TEntity entity = await Repository.GetByIdAsync(id);
+            if (entity == null)
+                throw new ArgumentException($"No entity with id '{id}'.", nameof(id));
+
+            await Repository.DeleteAsync(entity);
         }
     }
 

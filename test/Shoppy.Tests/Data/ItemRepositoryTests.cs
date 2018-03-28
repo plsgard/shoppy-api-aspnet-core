@@ -19,7 +19,7 @@ namespace Shoppy.Tests.Data
         [Fact]
         public async Task Duplicate_WithItems_AllExistingAndNotPicked()
         {
-            var userId = (await CreateUser()).Id;
+            var userId = (await CreateRandomUser()).Id;
             LoginAs(userId);
             var id = (await CreateList("liste1")).Id;
             var item1 = await CreateItem(id, "item1", picked: true);
@@ -53,7 +53,7 @@ namespace Shoppy.Tests.Data
         [Fact]
         public async Task Duplicate_WithoutItems_NoError()
         {
-            var userId = (await CreateUser()).Id;
+            var userId = (await CreateRandomUser()).Id;
             LoginAs(userId);
             var id = (await CreateList("liste1")).Id;
 
@@ -66,6 +66,77 @@ namespace Shoppy.Tests.Data
                 Assert.NotNull(newItems);
                 Assert.Empty(newItems);
             });
+        }
+
+        [Fact]
+        public async Task GetAllIncludingShares_FromSharedListOnly()
+        {
+            var userId1 = (await CreateRandomUser()).Id;
+            var currentUser = (await CreateRandomUser()).Id;
+
+            LoginAs(userId1);
+
+            var listId1 = (await CreateList("liste1")).Id;
+            var itemId = (await CreateItem(listId1, "item1")).Id;
+
+            await CreateShare(listId1, currentUser);
+
+            LoginAs(currentUser);
+
+            var itemDtos = await _itemRepository.GetAll().ToListAsync();
+            Assert.NotNull(itemDtos);
+            Assert.NotEmpty(itemDtos);
+            Assert.Single(itemDtos);
+            Assert.Contains(itemDtos, dto => dto.Id == itemId);
+        }
+
+        [Fact]
+        public async Task GetAllIncludingShares_FromMine_And_SharedList_OnOneList_NotBeingTheListUser()
+        {
+            var userId1 = (await CreateRandomUser()).Id;
+            var currentUser = (await CreateRandomUser()).Id;
+
+            LoginAs(userId1);
+
+            var listId1 = (await CreateList("liste1")).Id;
+            var itemId = (await CreateItem(listId1, "item1")).Id;
+
+            await CreateShare(listId1, currentUser);
+
+            LoginAs(currentUser);
+            var item2Id = (await CreateItem(listId1, "item2")).Id;
+
+            var itemDtos = await _itemRepository.GetAll().ToListAsync();
+            Assert.NotNull(itemDtos);
+            Assert.NotEmpty(itemDtos);
+            Assert.Equal(2, itemDtos.Count);
+            Assert.Contains(itemDtos, dto => dto.Id == itemId);
+            Assert.Contains(itemDtos, dto => dto.Id == item2Id);
+        }
+
+        [Fact]
+        public async Task GetAllIncludingShares_FromMine_And_SharedList_OnOneList_BeingTheListUser()
+        {
+            var userId1 = (await CreateRandomUser()).Id;
+            var currentUser = (await CreateRandomUser()).Id;
+
+            LoginAs(userId1);
+
+            var listId1 = (await CreateList("liste1")).Id;
+            var itemId = (await CreateItem(listId1, "item1")).Id;
+
+            await CreateShare(listId1, currentUser);
+
+            LoginAs(currentUser);
+            var item2Id = (await CreateItem(listId1, "item2")).Id;
+
+            LoginAs(userId1);
+            var itemDtos = await _itemRepository.GetAll().ToListAsync();
+            Assert.NotNull(itemDtos);
+            Assert.NotEmpty(itemDtos);
+            Assert.Equal(2, itemDtos.Count);
+            Assert.Contains(itemDtos, dto => dto.Id == itemId);
+            Assert.Contains(itemDtos, dto => dto.Id == item2Id);
         }
     }
 }
