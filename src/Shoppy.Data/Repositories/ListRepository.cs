@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Shoppy.Core.Lists;
+using Shoppy.Core.Shares;
 
 namespace Shoppy.Data.Repositories
 {
@@ -20,6 +22,14 @@ namespace Shoppy.Data.Repositories
                         Context.Shares.IgnoreQueryFilters().Where(s => s.UserId == Context.CurrentUserId.Value).Select(s => s.List)
                     ).Include(l => l.User)
                 : GetAll();
+        }
+
+        public async Task AddShareAsync(Share share)
+        {
+            if (share == null) throw new ArgumentNullException(nameof(share));
+
+            await Context.Shares.AddAsync(share);
+            await Context.SaveChangesAsync();
         }
     }
 }

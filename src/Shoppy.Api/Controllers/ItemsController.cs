@@ -24,7 +24,7 @@ namespace Shoppy.Api.Controllers
         }
 
         /// <summary>
-        /// Get all shopping items.
+        /// Get all accessible shopping items for the calling user, filtered by list or not.
         /// </summary>
         /// <returns>A list of shopping items.</returns>
         /// <response code="200">Returns the list of all items.</response>

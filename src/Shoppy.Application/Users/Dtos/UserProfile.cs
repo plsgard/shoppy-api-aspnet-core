@@ -9,6 +9,7 @@ namespace Shoppy.Application.Users.Dtos
         public UserProfile()
         {
             CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserInfoDto>();
             CreateMap<CreateUserDto, User>();
             CreateMap<UpdateUserDto, User>();
             CreateMap<RegisterDto, CreateUserDto>().ForMember(c => c.UserName, opts => opts.MapFrom(v => v.Email));

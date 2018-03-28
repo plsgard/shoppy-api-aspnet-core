@@ -5,6 +5,7 @@ using Shoppy.Application.Commons;
 using Shoppy.Application.Lists.Dtos;
 using Shoppy.Core.Items;
 using Shoppy.Core.Lists;
+using Shoppy.Core.Shares;
 
 namespace Shoppy.Application.Lists
 {
@@ -36,6 +37,20 @@ namespace Shoppy.Application.Lists
             return listDto;
         }
 
+        public async Task Share(ShareListDto input)
+        {
+            if (input == null) throw new ArgumentNullException(nameof(input));
+
+            Normalize(input);
+            Validate(input);
+
+            if (!await Repository.AnyAsync(l => l.Id == input.ListId))
+                throw new ArgumentException("Unable to share. The provided list does not exists or is not reachable.", nameof(input.ListId));
+
+            var share = ObjectMapper.Map<Share>(input);
+            await _repository.AddShareAsync(share);
+        }
+
         public override Task<ListDto> Get(Guid id)
         {
             return Task.FromResult(ToDto(_repository.GetAllIncludingShares().SingleOrDefault(l => l.Id == id)));
@@ -53,7 +68,7 @@ namespace Shoppy.Application.Lists
         protected override IQueryable<List> CreateFilteredQuery(GetAllListsDto input)
         {
             if (input == null) throw new ArgumentNullException(nameof(input));
-            return input.LoadShares ? base.CreateFilteredQuery(input) : _repository.GetAllIncludingShares();
+            return input.LoadShares ? _repository.GetAllIncludingShares() : base.CreateFilteredQuery(input);
         }
     }
 }

@@ -254,6 +254,38 @@ namespace Shoppy.Tests.Services
         }
 
         [Fact]
+        public async Task Get_WithUserInfo()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            var listDto = await _listAppService.Get(listId);
+            Assert.NotNull(listDto);
+            Assert.NotNull(listDto.User);
+            Assert.Equal(userId, listDto.User.Id);
+        }
+
+        [Fact]
+        public async Task Get_SharedList_WithUserInfo()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            var listDto = await _listAppService.Get(listId);
+            Assert.NotNull(listDto);
+            Assert.NotNull(listDto.User);
+            Assert.Equal(userId, listDto.User.Id);
+        }
+
+        [Fact]
         public async Task GetAll_OnlyMine()
         {
             var userId = (await CreateUser()).Id;
@@ -269,6 +301,82 @@ namespace Shoppy.Tests.Services
             Assert.NotNull(listDto);
             Assert.Single(listDto);
             Assert.Contains(listDto, dto => dto.Id == listId2);
+        }
+
+        [Fact]
+        public async Task GetAll_SharedLists_WithInfos()
+        {
+            var userId = (await CreateUser()).Id;
+            var currentUserId = (await CreateUser(userName: "test@toto.com")).Id;
+            LoginAs(userId);
+
+            var listId = (await CreateList("liste1")).Id;
+
+            await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            var listId2 = (await CreateList("liste2")).Id;
+
+            var listDto = await _listAppService.GetAll(new GetAllListsDto { LoadShares = true });
+            Assert.NotNull(listDto);
+            Assert.Equal(2, listDto.Count);
+            Assert.Contains(listDto, dto => dto.Id == listId2);
+            Assert.Contains(listDto, dto => dto.Id == listId);
+            Assert.True(listDto.All(l => l.User != null));
+            Assert.True(listDto.Count(l => l.Id == listId && l.User.Id == userId) == 1);
+            Assert.True(listDto.Count(l => l.Id == listId2 && l.User.Id == currentUserId) == 1);
+        }
+
+        [Fact]
+        public async Task GetAll_WithInfos()
+        {
+            var userId = (await CreateUser()).Id;
+            LoginAs(userId);
+
+            await CreateList("liste1");
+            await CreateList("liste2");
+
+            var listDto = await _listAppService.GetAll();
+            Assert.NotNull(listDto);
+            Assert.Equal(2, listDto.Count);
+            Assert.True(listDto.All(l => l.User != null && l.User.Id == userId));
+        }
+
+        [Fact]
+        public async Task Share_Cannot_ListNotMine()
+        {
+            var userId = (await CreateRandomUser()).Id;
+            var currentUserId = (await CreateRandomUser()).Id;
+            var externalUserId = (await CreateRandomUser()).Id;
+
+            LoginAs(userId);
+            var listId = (await CreateList("liste1")).Id;
+
+            LoginAs(currentUserId);
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Share(new ShareListDto
+            {
+                ListId = listId,
+                UserId = externalUserId
+            }));
+        }
+
+        [Fact]
+        public async Task Share_Can_ListIsMine()
+        {
+            var userId = (await CreateRandomUser()).Id;
+            var currentUserId = (await CreateRandomUser()).Id;
+
+            LoginAs(userId);
+            var listId = (await CreateList("liste1")).Id;
+
+            await _listAppService.Share(new ShareListDto
+            {
+                ListId = listId,
+                UserId = currentUserId
+            });
+
+            await UseDbContextAsync(async context => Assert.True(await context.Shares.IgnoreQueryFilters()
+                .AnyAsync(c => c.ListId == listId && c.UserId == currentUserId)));
         }
     }
 }

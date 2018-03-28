@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Shoppy.Core.Lists;
+using Shoppy.Core.Shares;
 
 namespace Shoppy.Application.Lists.Dtos
 {
@@ -10,6 +11,7 @@ namespace Shoppy.Application.Lists.Dtos
             CreateMap<List, ListDto>().ReverseMap();
             CreateMap<CreateListDto, List>();
             CreateMap<UpdateListDto, List>();
+            CreateMap<ShareListDto, Share>();
         }
     }
 }

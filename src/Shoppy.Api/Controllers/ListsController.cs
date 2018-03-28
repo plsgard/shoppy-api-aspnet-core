@@ -23,15 +23,15 @@ namespace Shoppy.Api.Controllers
         }
 
         /// <summary>
-        /// Get all shopping lists.
+        /// Get all accessible shopping lists for the calling user, with shared lists or not.
         /// </summary>
         /// <returns>A list of shopping lists.</returns>
         /// <response code="200">Returns the list of all shopping lists.</response>
         [HttpGet]
         [ProducesResponseType(typeof(IList<ListDto>), (int)HttpStatusCode.OK)]
-        public async Task<IList<ListDto>> Get()
+        public async Task<IList<ListDto>> Get(GetAllListsDto input)
         {
-            return await _listAppService.GetAll();
+            return await _listAppService.GetAll(input);
         }
 
         /// <summary>
@@ -123,23 +123,23 @@ namespace Shoppy.Api.Controllers
             return CreatedAtAction(nameof(Get), new { id = listDto.Id }, listDto);
         }
 
-        ///// <summary>
-        ///// Shares an existing shopping list with a specific user.
-        ///// </summary>
-        ///// <param name="value">The list to create.</param>
-        ///// <returns>A newly-created list with its unique id.</returns>
-        ///// <response code="201">Returns the newly-created list.</response>
-        ///// <response code="400">If the list is null or not valid.</response>            
-        //[HttpPost("share")]
-        //[ProducesResponseType(typeof(ListDto), (int)HttpStatusCode.OK)]
-        //[ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        //public async Task<IActionResult> Share([FromBody]ShareListDto value)
-        //{
-        //    if (value == null || !ModelState.IsValid)
-        //        return BadRequest(ModelState);
+        /// <summary>
+        /// Shares an existing shopping list with a specific user.
+        /// </summary>
+        /// <param name="value">The list to create.</param>
+        /// <returns>A newly-created list with its unique id.</returns>
+        /// <response code="201">Returns the newly-created list.</response>
+        /// <response code="400">If the list is null or not valid.</response>            
+        [HttpPost("share")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> Share([FromBody]ShareListDto value)
+        {
+            if (value == null || !ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        //    var listDto = await _listAppService.Duplicate(value);
-        //    return CreatedAtAction(nameof(Get), new { id = listDto.Id }, listDto);
-        //}
+            await _listAppService.Share(value);
+            return NoContent();
+        }
     }
 }
