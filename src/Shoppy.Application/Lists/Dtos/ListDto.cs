@@ -18,5 +18,10 @@ namespace Shoppy.Application.Lists.Dtos
         /// User who owns the list.
         /// </summary>
         public UserInfoDto User { get; set; }
+
+        /// <summary>
+        /// ID of the owner.
+        /// </summary>
+        public Guid UserId { get; set; }
     }
 }

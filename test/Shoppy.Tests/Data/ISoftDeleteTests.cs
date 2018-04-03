@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Shoppy.Tests.Data
 {
+    // ReSharper disable once InconsistentNaming
     public class ISoftDeleteTests : AppTestBase
     {
         [Fact]

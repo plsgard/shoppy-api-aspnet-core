@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Shoppy.Core.Lists;
 using Xunit;
 
 namespace Shoppy.Tests.Data
 {
+    // ReSharper disable once InconsistentNaming
     public class IMustHaveUserTests : AppTestBase
     {
         [Fact]

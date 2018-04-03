@@ -36,9 +36,9 @@ namespace Shoppy.Data.Repositories
         public IQueryable<TEntity> GetAllIncluding(params Expression<Func<TEntity, object>>[] includes)
         {
             if (includes == null || !includes.Any())
-                return GetAll();
+                return DbSet;
 
-            var returns = GetAll();
+            var returns = DbSet.AsQueryable();
             foreach (var expression in includes)
             {
                 returns = returns.Include(expression);
