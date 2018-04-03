@@ -1,9 +1,17 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Moq;
 using Shoppy.Application.Lists;
 using Shoppy.Application.Lists.Dtos;
+using Shoppy.Core.Roles;
+using Shoppy.Core.Users;
+using Shoppy.Data;
 using Shoppy.Data.Repositories;
 using Xunit;
 
@@ -12,10 +20,12 @@ namespace Shoppy.Tests.Services
     public class ListAppServiceTests : AppTestBase
     {
         private readonly ListAppService _listAppService;
+        private Mock<IUserEmailStore<User>> _mockUserStore;
 
         public ListAppServiceTests()
         {
-            _listAppService = new ListAppService(new ListRepository(Context), new ItemRepository(Context));
+            _mockUserStore = new Mock<IUserEmailStore<User>>();
+            _listAppService = new ListAppService(new ListRepository(Context), new ItemRepository(Context), new UserManager<User>(_mockUserStore.Object, null, null, null, null, null, null, null, null));
         }
 
         [Theory]
@@ -408,7 +418,23 @@ namespace Shoppy.Tests.Services
             await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Share(new ShareListDto
             {
                 ListId = listId,
-                UserId = externalUserId
+                UserName = ""
+            }));
+        }
+
+        [Fact]
+        public async Task Share_Cannot_UserDoesNotExists()
+        {
+            var userId = (await CreateRandomUser()).Id;
+            _mockUserStore.Setup(c => c.FindByEmailAsync(It.IsAny<string>(), CancellationToken.None)).ReturnsAsync(() => null);
+
+            LoginAs(userId);
+            var listId = (await CreateList("liste1")).Id;
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Share(new ShareListDto
+            {
+                ListId = listId,
+                UserName = "tet@test.com"
             }));
         }
 
@@ -416,7 +442,9 @@ namespace Shoppy.Tests.Services
         public async Task Share_Can_ListIsMine()
         {
             var userId = (await CreateRandomUser()).Id;
-            var currentUserId = (await CreateRandomUser()).Id;
+            var user = await CreateRandomUser();
+            var currentUserId = user.Id;
+            _mockUserStore.Setup(c => c.FindByEmailAsync(user.Email, CancellationToken.None)).ReturnsAsync(() => user);
 
             LoginAs(userId);
             var listId = (await CreateList("liste1")).Id;
@@ -424,7 +452,7 @@ namespace Shoppy.Tests.Services
             await _listAppService.Share(new ShareListDto
             {
                 ListId = listId,
-                UserId = currentUserId
+                UserName = user.UserName
             });
 
             await UseDbContextAsync(async context => Assert.True(await context.Shares.IgnoreQueryFilters()

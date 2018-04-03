@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Shoppy.Application.Commons;
 using Shoppy.Application.Lists.Dtos;
 using Shoppy.Core.Items;
 using Shoppy.Core.Lists;
 using Shoppy.Core.Shares;
+using Shoppy.Core.Users;
 
 namespace Shoppy.Application.Lists
 {
@@ -13,11 +15,13 @@ namespace Shoppy.Application.Lists
     {
         private readonly IListRepository _repository;
         private readonly IItemRepository _itemRepository;
+        private readonly UserManager<User> _userManager;
 
-        public ListAppService(IListRepository repository, IItemRepository itemRepository) : base(repository)
+        public ListAppService(IListRepository repository, IItemRepository itemRepository, UserManager<User> userManager) : base(repository)
         {
             _repository = repository;
             _itemRepository = itemRepository;
+            _userManager = userManager;
         }
 
         public async Task<ListDto> Duplicate(DuplicateListDto input)
@@ -46,9 +50,15 @@ namespace Shoppy.Application.Lists
 
             if (!await Repository.AnyAsync(l => l.Id == input.ListId))
                 throw new ArgumentException("Unable to share. The provided list does not exists or is not reachable.", nameof(input.ListId));
+            var user = await _userManager.FindByEmailAsync(input.UserName);
+            if (user == null)
+                throw new ArgumentException("Unable to share. The provided user does not exists or is not reachable.", nameof(input.UserName));
 
-            var share = ObjectMapper.Map<Share>(input);
-            await _repository.AddShareAsync(share);
+            await _repository.AddShareAsync(new Share
+            {
+                UserId = user.Id,
+                ListId = input.ListId
+            });
         }
 
         public override Task<ListDto> Get(Guid id)
