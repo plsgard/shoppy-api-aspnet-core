@@ -1,5 +1,4 @@
 ﻿using System;
-using Shoppy.Application.Commons;
 
 namespace Shoppy.Application.Lists.Dtos
 {

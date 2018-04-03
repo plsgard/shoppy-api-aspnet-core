@@ -160,6 +160,58 @@ namespace Shoppy.Tests.Services
         }
 
         [Fact]
+        public async Task Duplicate_Can_NotMineButShared()
+        {
+            var userId = (await CreateRandomUser()).Id;
+            var currentUserId = (await CreateRandomUser()).Id;
+
+            LoginAs(userId);
+            var listId = (await CreateList("liste1")).Id;
+            await CreateItem(listId, "item1");
+
+            await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            var listDto = await _listAppService.Duplicate(new DuplicateListDto
+            {
+                Name = "new liste",
+                ExistingListId = listId
+            });
+            Assert.NotNull(listDto);
+            Assert.NotEqual(listId, listDto.Id);
+            Assert.Equal(currentUserId, listDto.UserId);
+
+            await UseDbContextAsync(async context =>
+            {
+                var list = await context.Lists.IgnoreQueryFilters().Include(l => l.Items).SingleOrDefaultAsync(l => l.Id == listDto.Id);
+                Assert.NotNull(list);
+                Assert.NotNull(list.Items);
+                Assert.NotEmpty(list.Items);
+                Assert.Equal(1, list.Items.Count);
+            });
+        }
+
+        [Fact]
+        public async Task Duplicate_Cannot_NotMineNotShared()
+        {
+            var userId = (await CreateRandomUser()).Id;
+            var currentUserId = (await CreateRandomUser()).Id;
+
+            LoginAs(userId);
+            var listId = (await CreateList("liste1")).Id;
+            await CreateItem(listId, "item1");
+
+            //await CreateShare(listId, currentUserId);
+
+            LoginAs(currentUserId);
+            await Assert.ThrowsAnyAsync<Exception>(() => _listAppService.Duplicate(new DuplicateListDto
+            {
+                Name = "new liste",
+                ExistingListId = listId
+            }));
+        }
+
+        [Fact]
         public async Task Delete_Cannot_ListNoMine_Exception()
         {
             var userId = (await CreateUser()).Id;

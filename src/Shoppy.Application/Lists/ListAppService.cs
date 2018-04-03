@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Shoppy.Application.Commons;
@@ -62,7 +61,7 @@ namespace Shoppy.Application.Lists
             base.Validate(input);
 
             if (input != null && input is DuplicateListDto duplicate)
-                if (!Repository.Any(l => l.Id == duplicate.ExistingListId))
+                if (!_repository.GetAllIncludingShares().Any(l => l.Id == duplicate.ExistingListId)) // allow to duplicate a shared list
                     throw new ArgumentException($"Unable to duplicate list with id '{duplicate.ExistingListId}' because it does not exists.", nameof(duplicate.ExistingListId));
         }
 
