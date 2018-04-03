@@ -418,7 +418,7 @@ namespace Shoppy.Tests.Services
             await Assert.ThrowsAsync<ArgumentException>(() => _listAppService.Share(new ShareListDto
             {
                 ListId = listId,
-                UserName = ""
+                UserName = "test@test.coo"
             }));
         }
 
